@@ -1,27 +1,24 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Navbar from './components/Navbar';
+import LoginScreen from './components/LoginScreen';
 import Hero from './components/Hero';
-import BenefitCards from './components/BenefitCards';
 import BookingWidget from './components/BookingWidget';
 import FleetSection from './components/FleetSection';
 import LocationsSection from './components/LocationsSection';
-import MembershipBanner from './components/MembershipBanner';
-import TrustStats from './components/TrustStats';
 import Footer from './components/Footer';
 import BookingModal from './components/BookingModal';
-import MemberModal from './components/MemberModal';
 import { VEHICLES } from './data/fleetData';
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [rentalType, setRentalType] = useState('self'); // 'self' | 'driver'
-  const [selectedVehicleType, setSelectedVehicleType] = useState('car'); // 'car' | 'motor' | 'luxury'
+  const [selectedVehicleType, setSelectedVehicleType] = useState('car');
   
   // Modals state
   const [selectedVehicleForBooking, setSelectedVehicleForBooking] = useState(null);
-  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
-  const [activeLocation, setActiveLocation] = useState('Jakarta (CGK Bandara / Kota)');
+  const [activeLocation, setActiveLocation] = useState('Jakarta');
 
   // Filter vehicles based on active category, vehicle type tab, and search query
   const filteredVehicles = useMemo(() => {
@@ -30,7 +27,7 @@ export default function App() {
       if (selectedVehicleType === 'motor' && vehicle.type !== 'motor') {
         return false;
       }
-      if (selectedVehicleType === 'luxury' && vehicle.type !== 'luxury') {
+      if (selectedVehicleType === 'car' && vehicle.type === 'motor') {
         return false;
       }
 
@@ -56,16 +53,13 @@ export default function App() {
   }, [searchQuery, activeCategory, selectedVehicleType]);
 
   const handleBookingSearch = (searchData) => {
-    if (searchData.vehicleType === 'motor') {
-      setActiveCategory('Sewa Motor');
-    } else if (searchData.vehicleType === 'luxury') {
-      setActiveCategory('MPV Premium');
-    }
+    setSelectedVehicleType(searchData.vehicleType);
+    setActiveCategory(searchData.vehicleType === 'motor' ? 'Sewa Motor' : 'Semua');
     setActiveLocation(searchData.location);
   };
 
   const handleSelectHub = (hub) => {
-    setActiveLocation(`${hub.city} (${hub.code})`);
+    setActiveLocation(hub.city);
     const bookingWidget = document.getElementById('booking-widget');
     if (bookingWidget) {
       bookingWidget.scrollIntoView({ behavior: 'smooth' });
@@ -82,12 +76,17 @@ export default function App() {
     }
   };
 
+  if (!isLoggedIn) {
+    return <LoginScreen onLogin={() => setIsLoggedIn(true)} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#faf9fe] text-slate-800 font-sans selection:bg-purple-100 selection:text-purple-900 flex flex-col">
       {/* Top Navigation */}
       <Navbar 
         onOpenBooking={() => setSelectedVehicleForBooking(VEHICLES[0])}
         onSelectCategory={handleSelectNavCategory}
+        onLogout={() => setIsLoggedIn(false)}
       />
 
       <main className="flex-grow">
@@ -96,11 +95,6 @@ export default function App() {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onSearchSubmit={() => {}}
-        />
-
-        {/* Benefit Cards (Plus Tier, < 45 Menit, Perlindungan Penuh) */}
-        <BenefitCards 
-          onOpenMemberModal={() => setIsMemberModalOpen(true)}
         />
 
         {/* Main Booking Search Widget */}
@@ -125,7 +119,10 @@ export default function App() {
         <FleetSection 
           vehicles={filteredVehicles}
           activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
+          setActiveCategory={(category) => {
+            setSelectedVehicleType(category === 'Sewa Motor' ? 'motor' : 'car');
+            setActiveCategory(category);
+          }}
           onSelectVehicle={(car) => setSelectedVehicleForBooking(car)}
         />
 
@@ -134,13 +131,6 @@ export default function App() {
           onSelectHub={handleSelectHub}
         />
 
-        {/* Membership CTA & Glowing VIP Card */}
-        <MembershipBanner 
-          onOpenRegister={() => setIsMemberModalOpen(true)}
-        />
-
-        {/* 4 Trust Metrics Columns */}
-        <TrustStats />
       </main>
 
       {/* Footer */}
@@ -148,17 +138,13 @@ export default function App() {
 
       {/* Booking Interactive Modal */}
       <BookingModal 
+        key={`${selectedVehicleForBooking?.id ?? 'closed'}-${Boolean(selectedVehicleForBooking)}`}
         vehicle={selectedVehicleForBooking}
         isOpen={!!selectedVehicleForBooking}
         onClose={() => setSelectedVehicleForBooking(null)}
         defaultLocation={activeLocation}
       />
 
-      {/* Member Plus Interactive Modal */}
-      <MemberModal 
-        isOpen={isMemberModalOpen}
-        onClose={() => setIsMemberModalOpen(false)}
-      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Headphones, Menu, X, Sparkles, ChevronRight, Car } from 'lucide-react';
+import { useState } from 'react';
+import { Headphones, Menu, X, LogOut, CarFront } from 'lucide-react';
 
-export default function Navbar({ onOpenBooking, onSelectCategory }) {
+export default function Navbar({ onOpenBooking, onSelectCategory, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -11,16 +11,15 @@ export default function Navbar({ onOpenBooking, onSelectCategory }) {
           
           {/* Brand Logo */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#6320ee] to-[#8d42ff] flex items-center justify-center text-white shadow-md shadow-purple-600/25">
-              <span className="font-extrabold text-lg tracking-tight">Ca</span>
+            <div className="w-10 h-10 rounded-2xl bg-[#173c35] flex items-center justify-center text-[#d5f36a]">
+              <CarFront className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1">
-                <span className="text-xl font-extrabold text-slate-900 tracking-tight">AutoLuxe</span>
-                <span className="text-purple-600 font-bold text-xl">.id</span>
+                <span className="text-xl font-extrabold text-slate-900 tracking-tight">Rent-Go</span>
               </div>
               <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase -mt-1">
-                MOBILITY SOLUTION
+                RENTAL KENDARAAN
               </span>
             </div>
           </div>
@@ -28,7 +27,7 @@ export default function Navbar({ onOpenBooking, onSelectCategory }) {
           {/* Center Navigation Links */}
           <nav className="hidden md:flex items-center gap-7">
             <a 
-              href="#armada" 
+              href="#armada"
               className="text-sm font-semibold text-slate-700 hover:text-purple-700 transition"
               onClick={() => onSelectCategory && onSelectCategory('Semua')}
             >
@@ -44,17 +43,9 @@ export default function Navbar({ onOpenBooking, onSelectCategory }) {
             <a 
               href="#armada" 
               className="text-sm font-semibold text-slate-700 hover:text-purple-700 transition"
+              onClick={() => onSelectCategory && onSelectCategory('Semua')}
             >
-              Paket Wisata
-            </a>
-            <a 
-              href="#member-plus" 
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-purple-700 transition"
-            >
-              Plus
-              <span className="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-                SPARK
-              </span>
+              Sewa Mobil
             </a>
             <a 
               href="#lokasi-hub" 
@@ -76,17 +67,14 @@ export default function Navbar({ onOpenBooking, onSelectCategory }) {
               <span>Bantuan</span>
             </a>
 
-            <button 
-              type="button" 
-              className="text-xs font-bold text-slate-800 hover:text-purple-700 transition px-2 py-1.5"
-            >
-              Masuk
+            <button type="button" onClick={onLogout} className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-emerald-800 transition px-2 py-1.5">
+              <LogOut className="w-3.5 h-3.5" /> Keluar
             </button>
 
             <button
               type="button"
               onClick={onOpenBooking}
-              className="bg-[#0e0c1f] hover:bg-[#1f1a3f] active:scale-95 text-white text-xs font-bold px-5 py-2.5 rounded-full transition-all duration-200 shadow-md shadow-slate-900/10"
+              className="bg-[#173c35] hover:bg-[#20564b] active:scale-95 text-white text-xs font-bold px-5 py-2.5 rounded-full transition-all duration-200"
             >
               Sewa Sekarang
             </button>
@@ -97,7 +85,7 @@ export default function Navbar({ onOpenBooking, onSelectCategory }) {
             <button
               type="button"
               onClick={onOpenBooking}
-              className="bg-[#0e0c1f] text-white text-xs font-bold px-3 py-2 rounded-full"
+              className="bg-[#173c35] text-white text-xs font-bold px-3 py-2 rounded-full"
             >
               Sewa
             </button>
@@ -137,20 +125,13 @@ export default function Navbar({ onOpenBooking, onSelectCategory }) {
             </a>
             <a
               href="#armada"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onSelectCategory && onSelectCategory('Semua');
+              }}
               className="block py-2 text-sm font-semibold text-slate-700 hover:text-purple-700"
             >
-              Paket Wisata
-            </a>
-            <a
-              href="#member-plus"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between py-2 text-sm font-semibold text-slate-700 hover:text-purple-700"
-            >
-              <span>AutoLuxe Plus</span>
-              <span className="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                SPARK
-              </span>
+              Sewa Mobil
             </a>
             <a
               href="#lokasi-hub"
@@ -167,11 +148,8 @@ export default function Navbar({ onOpenBooking, onSelectCategory }) {
                 <Headphones className="w-3.5 h-3.5 text-purple-600" />
                 <span>Bantuan 24/7</span>
               </a>
-              <button
-                type="button"
-                className="text-xs font-bold text-slate-800 px-3 py-1.5 rounded-lg border border-slate-200"
-              >
-                Masuk Akun
+              <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 px-3 py-1.5 rounded-lg border border-slate-200">
+                <LogOut className="w-3.5 h-3.5" /> Keluar
               </button>
             </div>
           </div>
