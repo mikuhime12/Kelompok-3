@@ -1,30 +1,18 @@
-import React, { useState } from 'react';
-import { 
-  X, 
-  Calendar, 
-  MapPin, 
-  ShieldCheck, 
-  CheckCircle2, 
-  Sparkles, 
-  CreditCard,
-  User,
-  Phone,
-  Car
-} from 'lucide-react';
+import { useState } from 'react';
+import { X, ShieldCheck, CheckCircle2, User, Phone } from 'lucide-react';
 
-export default function BookingModal({ vehicle, isOpen, onClose, defaultLocation }) {
-  if (!isOpen || !vehicle) return null;
-
+export default function BookingModal({ vehicle, isOpen, onClose }) {
   const [days, setDays] = useState(2);
-  const [withDriver, setWithDriver] = useState(vehicle.fuel === 'Termasuk Supir');
+  const [withDriver, setWithDriver] = useState(vehicle?.type !== 'motor' && vehicle?.fuel === 'Termasuk Supir');
   const [userName, setUserName] = useState('');
   const [userPhone, setUserPhone] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const driverRate = withDriver && vehicle.fuel !== 'Termasuk Supir' ? 200000 : 0;
+  if (!isOpen || !vehicle) return null;
+
+  const driverRate = vehicle.type !== 'motor' && withDriver && vehicle.fuel !== 'Termasuk Supir' ? 200000 : 0;
   const basePricePerDay = vehicle.price;
   const totalBase = (basePricePerDay + driverRate) * days;
-  const discount = Math.round(totalBase * 0.05); // 5% Member cashback
   const grandTotal = totalBase;
 
   const formatPrice = (p) => 'Rp ' + p.toLocaleString('id-ID');
@@ -61,7 +49,7 @@ export default function BookingModal({ vehicle, isOpen, onClose, defaultLocation
               Pemesanan Berhasil Disiapkan!
             </h3>
             <p className="text-xs text-slate-500 max-w-xs mx-auto">
-              Tim concierge AutoLuxe akan segera menghubungi nomor WhatsApp Anda dalam kurun 10 menit untuk konfirmasi penjemputan.
+              Tim Rent-Go akan menghubungi nomor WhatsApp Anda untuk konfirmasi sewa.
             </p>
             <div className="pt-4">
               <button
@@ -77,7 +65,7 @@ export default function BookingModal({ vehicle, isOpen, onClose, defaultLocation
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 uppercase">
-                {vehicle.badge}
+                {vehicle.type === 'motor' ? 'RENTAL MOTOR' : 'RENTAL MOBIL'}
               </span>
               <span className="text-[10px] text-slate-400 font-bold">
                 Tahun {vehicle.year}
@@ -140,7 +128,7 @@ export default function BookingModal({ vehicle, isOpen, onClose, defaultLocation
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className={`grid gap-3 ${vehicle.type === 'motor' ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
                     Durasi Sewa
@@ -154,24 +142,26 @@ export default function BookingModal({ vehicle, isOpen, onClose, defaultLocation
                     <option value={2}>2 Hari</option>
                     <option value={3}>3 Hari</option>
                     <option value={5}>5 Hari</option>
-                    <option value={7}>1 Minggu (Diskon 5%)</option>
-                    <option value={30}>1 Bulan (Diskon 20%)</option>
+                    <option value={7}>7 Hari</option>
+                    <option value={30}>30 Hari</option>
                   </select>
                 </div>
 
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                    Opsi Supir
-                  </label>
-                  <select
-                    value={withDriver ? 'yes' : 'no'}
-                    onChange={(e) => setWithDriver(e.target.value === 'yes')}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none"
-                  >
-                    <option value="no">Lepas Kunci (Self-Drive)</option>
-                    <option value="yes">+ Supir Ramah (+Rp 200rb/hr)</option>
-                  </select>
-                </div>
+                {vehicle.type !== 'motor' && (
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                      Opsi Supir
+                    </label>
+                    <select
+                      value={withDriver ? 'yes' : 'no'}
+                      onChange={(e) => setWithDriver(e.target.value === 'yes')}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none"
+                    >
+                      <option value="no">Lepas Kunci (Self-Drive)</option>
+                      <option value="yes">+ Supir Ramah (+Rp 200rb/hr)</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* Price Breakdown */}
@@ -186,10 +176,6 @@ export default function BookingModal({ vehicle, isOpen, onClose, defaultLocation
                     <span>{formatPrice(driverRate * days)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-emerald-600 font-medium">
-                  <span>Estimasi Cashback Member Plus</span>
-                  <span>+{formatPrice(discount)}</span>
-                </div>
                 <div className="flex justify-between text-slate-900 font-extrabold text-sm pt-2 border-t border-dashed border-slate-200">
                   <span>Total Pembayaran</span>
                   <span className="text-purple-700">{formatPrice(grandTotal)}</span>

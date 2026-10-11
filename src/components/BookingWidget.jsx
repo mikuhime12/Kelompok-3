@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   MapPin, 
   Calendar, 
-  Clock, 
   Car, 
   Bike, 
-  Crown, 
   CheckCircle2, 
   Search,
   ChevronDown
@@ -18,16 +16,16 @@ export default function BookingWidget({
   rentalType,
   setRentalType 
 }) {
-  const [location, setLocation] = useState('Jakarta (CGK Bandara / Kota)');
+  const [location, setLocation] = useState('Jakarta');
   const [pickupDate, setPickupDate] = useState('Kamis, 09:00 WIB');
   const [returnDate, setReturnDate] = useState('Senin, 09:00 WIB (3 Hari)');
 
   const locations = [
-    'Jakarta (CGK Bandara / Kota)',
-    'Bali (DPS Ngurah Rai / Kuta)',
-    'Surabaya (SUB Juanda / Gubeng)',
-    'Yogyakarta (YIA Bandara / Malioboro)',
-    'Bandung (BDO / Stasiun WHOOSH)'
+    'Jakarta',
+    'Bali',
+    'Surabaya',
+    'Yogyakarta',
+    'Bandung'
   ];
 
   const handleSearchSubmit = (e) => {
@@ -80,7 +78,7 @@ export default function BookingWidget({
             </button>
           </div>
 
-          {/* Right Tabs: Mobil, Motor, Luxury VIP */}
+          {/* Vehicle type tabs */}
           <div className="flex items-center gap-2 self-start sm:self-auto overflow-x-auto pb-1 sm:pb-0">
             <button
               type="button"
@@ -108,18 +106,6 @@ export default function BookingWidget({
               <span>Motor</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setSelectedVehicleType('luxury')}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border ${
-                selectedVehicleType === 'luxury'
-                  ? 'bg-purple-50 text-purple-700 border-purple-200 shadow-sm'
-                  : 'bg-white text-slate-500 border-transparent hover:border-slate-200 hover:text-slate-800'
-              }`}
-            >
-              <Crown className="w-3.5 h-3.5" />
-              <span>Luxury VIP</span>
-            </button>
           </div>
 
         </div>
@@ -128,10 +114,10 @@ export default function BookingWidget({
         <form onSubmit={handleSearchSubmit} className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
             
-            {/* Input 1: Lokasi Penjemputan */}
+            {/* Rental city */}
             <div className="bg-slate-50/70 hover:bg-slate-50 border border-slate-200/80 rounded-2xl p-3 sm:p-3.5 transition group focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-300">
               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                LOKASI PENJEMPUTAN
+                KOTA RENTAL
               </label>
               <div className="relative flex items-center">
                 <MapPin className="w-4 h-4 text-purple-600 mr-2 flex-shrink-0" />
@@ -212,7 +198,7 @@ export default function BookingWidget({
           </div>
 
           <div className="text-slate-400 text-[11px] sm:text-right">
-            Butuh sewa bulanan? <span className="font-semibold text-purple-700 cursor-pointer hover:underline">Dapatkan diskon perusahaan s/d 30%.</span>
+            Tersedia pilihan durasi sewa harian hingga bulanan.
           </div>
         </div>
 

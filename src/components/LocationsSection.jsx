@@ -1,12 +1,9 @@
-import React from 'react';
-import { Plane, Palmtree, Building2, Landmark, Train, CheckCircle2 } from 'lucide-react';
+import { MapPin, Palmtree, Building2, Landmark, Train } from 'lucide-react';
 import { HUBS } from '../data/hubsData';
 
 export default function LocationsSection({ onSelectHub }) {
   const getIcon = (iconName) => {
     switch (iconName) {
-      case 'plane':
-        return <Plane className="w-5 h-5 text-teal-600" />;
       case 'palmtree':
         return <Palmtree className="w-5 h-5 text-purple-600" />;
       case 'building':
@@ -16,7 +13,7 @@ export default function LocationsSection({ onSelectHub }) {
       case 'train':
         return <Train className="w-5 h-5 text-purple-600" />;
       default:
-        return <Plane className="w-5 h-5 text-purple-600" />;
+        return <MapPin className="w-5 h-5 text-purple-600" />;
     }
   };
 
@@ -44,10 +41,10 @@ export default function LocationsSection({ onSelectHub }) {
           JANGKAUAN LUAS LAYANAN
         </span>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Tersedia di Bandara & Pusat Kota Utama
+          Lokasi Rental Rent-Go
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Pengantaran gratis ke terminal kedatangan dan hotel area perkotaan.
+          Pilih kota untuk melihat ketersediaan kendaraan rental.
         </p>
       </div>
 

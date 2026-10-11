@@ -1,5 +1,4 @@
-import React from 'react';
-import { ShieldCheck, MessageCircle } from 'lucide-react';
+import { ShieldCheck, MessageCircle, CarFront } from 'lucide-react';
 
 export default function Footer({ onSelectCategory }) {
   return (
@@ -12,23 +11,23 @@ export default function Footer({ onSelectCategory }) {
           {/* Col 1: Brand Info (span 2 on lg) */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#6320ee] to-[#8d42ff] flex items-center justify-center text-white shadow-sm">
-                <span className="font-extrabold text-base tracking-tight">Ca</span>
+              <div className="w-9 h-9 rounded-xl bg-[#173c35] flex items-center justify-center text-[#d5f36a]">
+                <CarFront className="w-5 h-5" />
               </div>
               <span className="text-lg font-extrabold text-slate-900 tracking-tight">
-                AutoLuxe Indonesia
+                Rent-Go
               </span>
             </div>
 
             <p className="text-xs text-slate-500 leading-relaxed max-w-sm mb-6">
-              Platform persewaan kendaraan mobil dan motor dengan standar kenyamanan eksekutif, fleksibilitas tinggi, dan kepastian unit terlengkap di Indonesia.
+              Rental mobil dan motor untuk kebutuhan perjalanan harian hingga bulanan.
             </p>
 
             {/* Social Icons */}
             <div className="flex items-center gap-2.5">
               <a
                 href="#facebook"
-                aria-label="Facebook AutoLuxe"
+                aria-label="Facebook Rent-Go"
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-purple-100 hover:text-purple-600 text-slate-600 flex items-center justify-center transition"
               >
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -37,7 +36,7 @@ export default function Footer({ onSelectCategory }) {
               </a>
               <a
                 href="#instagram"
-                aria-label="Instagram AutoLuxe"
+                aria-label="Instagram Rent-Go"
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-purple-100 hover:text-purple-600 text-slate-600 flex items-center justify-center transition"
               >
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -46,7 +45,7 @@ export default function Footer({ onSelectCategory }) {
               </a>
               <a
                 href="#twitter"
-                aria-label="X Twitter AutoLuxe"
+                aria-label="X Twitter Rent-Go"
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-purple-100 hover:text-purple-600 text-slate-600 flex items-center justify-center transition"
               >
                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -55,7 +54,7 @@ export default function Footer({ onSelectCategory }) {
               </a>
               <a
                 href="https://wa.me/6281234567890"
-                aria-label="WhatsApp AutoLuxe"
+                aria-label="WhatsApp Rent-Go"
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-emerald-100 hover:text-emerald-600 text-slate-600 flex items-center justify-center transition"
               >
                 <MessageCircle className="w-4 h-4" />
@@ -81,7 +80,7 @@ export default function Footer({ onSelectCategory }) {
               </li>
               <li>
                 <a href="#lokasi-hub" className="hover:text-purple-600 transition">
-                  Antar Jemput Bandara
+                  Pilihan Mobil
                 </a>
               </li>
               <li>
@@ -94,8 +93,8 @@ export default function Footer({ onSelectCategory }) {
                 </a>
               </li>
               <li>
-                <a href="#member-plus" className="hover:text-purple-600 transition">
-                  Sewa Mobil Bulanan / Korporat
+                <a href="#armada" className="hover:text-purple-600 transition">
+                  Durasi Sewa Fleksibel
                 </a>
               </li>
             </ul>
@@ -104,32 +103,32 @@ export default function Footer({ onSelectCategory }) {
           {/* Col 3: Destinasi Hub */}
           <div>
             <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-4">
-              DESTINASI HUB
+              KOTA RENTAL
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-500">
               <li>
                 <a href="#lokasi-hub" className="hover:text-purple-600 transition">
-                  Jakarta & Tangerang
+                  Jakarta
                 </a>
               </li>
               <li>
                 <a href="#lokasi-hub" className="hover:text-purple-600 transition">
-                  Bali (Kuta, Seminyak, Canggu)
+                  Bali
                 </a>
               </li>
               <li>
                 <a href="#lokasi-hub" className="hover:text-purple-600 transition">
-                  Surabaya & Malang
+                  Surabaya
                 </a>
               </li>
               <li>
                 <a href="#lokasi-hub" className="hover:text-purple-600 transition">
-                  Yogyakarta & Solo
+                  Yogyakarta
                 </a>
               </li>
               <li>
                 <a href="#lokasi-hub" className="hover:text-purple-600 transition">
-                  Bandung & Lembang
+                  Bandung
                 </a>
               </li>
             </ul>
@@ -174,7 +173,7 @@ export default function Footer({ onSelectCategory }) {
         {/* Bottom Sub-bar */}
         <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-400">
           <div>
-            © 2024 PT AutoLuxe Mobilitas Nusantara. Seluruh hak cipta dilindungi.
+            © 2026 Rent-Go. Seluruh hak cipta dilindungi.
           </div>
 
           <div className="flex items-center gap-2 text-slate-500 font-medium">

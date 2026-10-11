@@ -1,17 +1,17 @@
 export const HUBS = [
   {
-    id: 'cgk',
-    code: 'Jakarta (CGK)',
-    name: 'Soekarno-Hatta T1-3',
+    id: 'jakarta',
+    code: 'Jakarta',
+    name: 'Area pusat kota',
     status: '24 Jam Ready',
     city: 'Jakarta',
-    icon: 'plane',
+    icon: 'building',
     color: 'teal'
   },
   {
     id: 'dps',
-    code: 'Bali (DPS)',
-    name: 'Ngurah Rai & Kuta',
+    code: 'Bali',
+    name: 'Kuta dan Denpasar',
     status: '24 Jam Ready',
     city: 'Bali',
     icon: 'palmtree',
@@ -19,8 +19,8 @@ export const HUBS = [
   },
   {
     id: 'sub',
-    code: 'Surabaya (SUB)',
-    name: 'Juanda & Gubeng',
+    code: 'Surabaya',
+    name: 'Area pusat kota',
     status: '06.00-23.00',
     city: 'Surabaya',
     icon: 'building',
@@ -28,8 +28,8 @@ export const HUBS = [
   },
   {
     id: 'yia',
-    code: 'Yogyakarta (YIA)',
-    name: 'Bandara & Malioboro',
+    code: 'Yogyakarta',
+    name: 'Malioboro dan sekitarnya',
     status: '24 Jam Ready',
     city: 'Yogyakarta',
     icon: 'landmark',
@@ -37,8 +37,8 @@ export const HUBS = [
   },
   {
     id: 'bdo',
-    code: 'Bandung (BDO)',
-    name: 'Stasiun Cepat WHOOSH',
+    code: 'Bandung',
+    name: 'Area pusat kota',
     status: '24 Jam Ready',
     city: 'Bandung',
     icon: 'train',

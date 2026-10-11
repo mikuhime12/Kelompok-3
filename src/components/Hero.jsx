@@ -1,5 +1,4 @@
-import React from 'react';
-import { Search, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react';
 
 export default function Hero({ searchQuery, setSearchQuery, onSearchSubmit }) {
   const handleSubmit = (e) => {
@@ -18,22 +17,15 @@ export default function Hero({ searchQuery, setSearchQuery, onSearchSubmit }) {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         
-        {/* Top Guarantee Pill */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50/90 border border-emerald-200 text-emerald-800 text-xs sm:text-xs font-semibold mb-6 shadow-sm shadow-emerald-500/5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Jaminan Penjemputan Tepat Waktu atau Garansi Gratis 1 Hari</span>
-        </div>
-
         {/* Main Heading */}
         <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-extrabold text-[#110e2d] tracking-tight leading-[1.14] mb-5">
-          Sewa Kendaraan Nyaman, <br className="hidden sm:inline" />
-          Cepat & Terpercaya untuk <br className="hidden sm:inline" />
-          Segala Rute
+          Sewa Mobil dan Motor <br className="hidden sm:inline" />
+          dengan Mudah
         </h1>
 
         {/* Subtitle */}
         <p className="max-w-2xl mx-auto text-slate-500 text-xs sm:text-sm md:text-[15px] leading-relaxed mb-8">
-          Pilihan terlengkap mulai dari City Car, Family SUV, MPV Mewah hingga Mobil Listrik dengan tarif transparan, asuransi penuh, dan unit bebas bau rokok.
+          Pilih kendaraan yang sesuai kebutuhan, tentukan jadwal sewa, lalu pesan langsung dari Rent-Go.
         </p>
 
         {/* Search Bar */}
@@ -50,7 +42,7 @@ export default function Hero({ searchQuery, setSearchQuery, onSearchSubmit }) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari mobil: Alphard, Innova Zenix, Ioniq 5, Bali, Jakarta..."
+              placeholder="Cari mobil atau motor..."
               className="w-full bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none py-2"
             />
 

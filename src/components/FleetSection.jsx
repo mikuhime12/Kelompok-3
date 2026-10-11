@@ -1,5 +1,4 @@
-import React from 'react';
-import { Users, Gauge, Fuel, Zap, Star, Shield, ArrowUpRight } from 'lucide-react';
+import { Users, Gauge, Fuel, Zap } from 'lucide-react';
 import { CATEGORIES } from '../data/fleetData';
 
 export default function FleetSection({ 
