@@ -4,11 +4,43 @@ import { ArrowRight, CarFront, KeyRound, Mail } from 'lucide-react';
 export default function LoginScreen({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [pesanError, setPesanError] = useState('');
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+
+const handleSubmit = async (event) => {
+  event.preventDefault();
+
+  setPesanError('');
+
+  try {
+    const response = await fetch("http://localhost:3000/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setPesanError(data.message);
+      return;
+    }
+
+    // Login berhasil, lanjut ke halaman utama
     onLogin();
-  };
+  } catch (error) {
+    console.error("Gagal menghubungi backend:", error);
+    setPesanError(
+      "Server tidak dapat dihubungi. Coba lagi."+ error.message
+    );
+  }
+};
+
 
   return (
     <main className="min-h-screen bg-[#f4f5ef] p-4 sm:p-8 flex items-center justify-center">
@@ -74,6 +106,12 @@ export default function LoginScreen({ onLogin }) {
             <button type="submit" className="w-full h-12 rounded-xl bg-[#173c35] hover:bg-[#20564b] text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors">
               Masuk <ArrowRight className="w-4 h-4" />
             </button>
+            {pesanError && (
+            <p
+              role="alert"
+              className="text-sm text-red-600 font-medium">
+             {pesanError}
+            </p>)}
           </form>
           <p className="text-[11px] text-slate-400 mt-6 leading-relaxed">Tampilan demo front end. Form ini belum terhubung ke sistem akun.</p>
         </section>
