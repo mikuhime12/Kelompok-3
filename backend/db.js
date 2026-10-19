@@ -9,6 +9,10 @@ dotenv.config({
 
 const { Pool } = pg;
 
+if (!process.env.DB_PASSWORD) {
+  throw new Error("DB_PASSWORD belum terbaca. Periksa backend/.env");
+}
+
 const pool = new Pool({
   host: process.env.DB_HOST || "localhost",
   port: Number(process.env.DB_PORT || 5432),

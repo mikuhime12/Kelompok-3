@@ -143,6 +143,10 @@ const handleSubmit = async (event) => {
             <button type="submit" className="w-full h-12 rounded-xl bg-[#173c35] hover:bg-[#20564b] text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors">
               {isRegistering ? 'Daftar' : 'Masuk'} <ArrowRight className="w-4 h-4" />
             </button>
+            {feedback && (
+            <p className="mt-4 text-center text-sm" role="status">
+            {feedback}
+            </p>)}
           </form>
           <p className="text-sm text-slate-600 mt-6 text-center">
             {isRegistering ? 'Sudah punya akun?' : 'Belum punya akun?'}{' '}
@@ -154,7 +158,6 @@ const handleSubmit = async (event) => {
               {isRegistering ? 'Masuk' : 'Daftar'}
             </button>
           </p>
-          <p className="text-[11px] text-slate-400 mt-4 leading-relaxed">Tampilan demo front end. Form ini belum terhubung ke sistem akun.</p>
         </section>
       </div>
     </main>
