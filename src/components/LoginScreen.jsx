@@ -6,11 +6,56 @@ export default function LoginScreen({ onLogin }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [feedback, setFeedback] = useState('');
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    onLogin();
-  };
+
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  setFeedback("");
+
+  const endpoint = isRegistering
+    ? "/api/register"
+    : "/api/login";
+
+  const payload = isRegistering
+    ? { nama: name, email, password }
+    : { email, password };
+
+  try {
+    const response = await fetch(
+      `http://localhost:3000${endpoint}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setFeedback(data.message || "Permintaan gagal.");
+      return;
+    }
+
+    if (isRegistering) {
+      setFeedback("Registrasi berhasil. Silakan login.");
+      setIsRegistering(false);
+      setPassword("");
+    } else {
+      setFeedback("Login berhasil.");
+      onLogin(data.user);
+    }
+  } catch (error) {
+    console.error("Permintaan gagal:", error);
+    setFeedback(
+      "Server tidak dapat dihubungi. Periksa backend Rent-Go."
+    );
+  }
+};
+
 
   return (
     <main className="min-h-screen bg-[#f4f5ef] p-4 sm:p-8 flex items-center justify-center">
