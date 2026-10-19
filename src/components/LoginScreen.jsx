@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { ArrowRight, CarFront, KeyRound, Mail } from 'lucide-react';
 
 export default function LoginScreen({ onLogin }) {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -36,11 +38,33 @@ export default function LoginScreen({ onLogin }) {
 
         <section className="p-7 sm:p-12 lg:p-14 flex flex-col justify-center">
           <div className="w-12 h-1 bg-[#d5f36a] rounded-full mb-8" />
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-emerald-800 mb-3">Selamat datang</p>
-          <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Masuk ke Rent-Go</h2>
-          <p className="text-sm text-slate-500 mb-8">Masuk untuk melanjutkan ke layanan rental kendaraan.</p>
+          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-emerald-800 mb-3">
+            {isRegistering ? 'Mulai perjalananmu' : 'Selamat datang'}
+          </p>
+          <h2 className="text-3xl font-extrabold text-slate-900 mb-2">
+            {isRegistering ? 'Buat akun Rent-Go' : 'Masuk ke Rent-Go'}
+          </h2>
+          <p className="text-sm text-slate-500 mb-8">
+            {isRegistering
+              ? 'Daftar untuk mulai menggunakan layanan rental kendaraan.'
+              : 'Masuk untuk melanjutkan ke layanan rental kendaraan.'}
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {isRegistering && (
+              <label className="block">
+                <span className="block text-xs font-bold text-slate-700 mb-2">Nama lengkap</span>
+                <input
+                  type="text"
+                  required
+                  autoComplete="name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Nama lengkap"
+                  className="w-full h-12 rounded-xl border border-slate-200 px-4 text-sm outline-none placeholder:text-slate-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10"
+                />
+              </label>
+            )}
             <label className="block">
               <span className="block text-xs font-bold text-slate-700 mb-2">Email</span>
               <span className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 h-12 focus-within:border-emerald-700 focus-within:ring-2 focus-within:ring-emerald-700/10">
@@ -63,19 +87,29 @@ export default function LoginScreen({ onLogin }) {
                 <input
                   type="password"
                   required
-                  autoComplete="current-password"
+                  autoComplete={isRegistering ? 'new-password' : 'current-password'}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Masukkan kata sandi"
+                  placeholder={isRegistering ? 'Buat kata sandi' : 'Masukkan kata sandi'}
                   className="w-full text-sm outline-none placeholder:text-slate-400"
                 />
               </span>
             </label>
             <button type="submit" className="w-full h-12 rounded-xl bg-[#173c35] hover:bg-[#20564b] text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors">
-              Masuk <ArrowRight className="w-4 h-4" />
+              {isRegistering ? 'Daftar' : 'Masuk'} <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-          <p className="text-[11px] text-slate-400 mt-6 leading-relaxed">Tampilan demo front end. Form ini belum terhubung ke sistem akun.</p>
+          <p className="text-sm text-slate-600 mt-6 text-center">
+            {isRegistering ? 'Sudah punya akun?' : 'Belum punya akun?'}{' '}
+            <button
+              type="button"
+              onClick={() => setIsRegistering(!isRegistering)}
+              className="font-bold text-emerald-800 hover:text-emerald-950"
+            >
+              {isRegistering ? 'Masuk' : 'Daftar'}
+            </button>
+          </p>
+          <p className="text-[11px] text-slate-400 mt-4 leading-relaxed">Tampilan demo front end. Form ini belum terhubung ke sistem akun.</p>
         </section>
       </div>
     </main>
