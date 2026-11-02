@@ -13,7 +13,7 @@ Setiap endpoint ditandai **TERIMPLEMENTASI** (sudah ada kode di `backend/server.
 3. [Bentuk respons](#bentuk-respons)
 4. [Model resource](#model-resource)
 5. [Autentikasi (TERIMPLEMENTASI)](#autentikasi-terimplementasi)
-6. [Rancangan lanjutan autentikasi](#rancangan-lanjutan-autentikasi)
+6. [Autentikasi JWT & hashing password (RANCANGAN)](#autentikasi-jwt-dan-hashing-password-rancangan)
 7. [Lokasi hub (RANCANGAN)](#lokasi-hub-rancangan)
 8. [Armada kendaraan (RANCANGAN)](#armada-kendaraan-rancangan)
 9. [Pemesanan (RANCANGAN)](#pemesanan-rancangan)
@@ -59,6 +59,8 @@ Tabel di atas hanya menyimpan data login dasar. Untuk mendukung role admin, prof
 | `phone` | varchar(20) | Nomor telepon E.164, opsional |
 | `created_at` | timestamptz | Default `now()` |
 | `updated_at` | timestamptz | Diperbarui saat akun diubah |
+| `token_version` | integer | Default `0`. Naikkan saat ganti/reset password untuk membatalkan semua token lama (lihat [JWT](#autentikasi-jwt-dan-hashing-password-rancangan)) |
+| `password_changed_at` | timestamptz | Waktu terakhir password diubah |
 
 ### `vehicles`
 
@@ -207,11 +209,30 @@ Catatan aksi admin untuk seluruh perubahan via [endpoint admin](#endpoint-admin-
 
 Indeks: biasa pada `(entity, entity_id)`, `(actor_id)`, `(created_at)`.
 
+### `refresh_tokens`
+
+Refresh token JWT yang diterbitkan untuk tiap akun, disimpan untuk mendukung pencabutan dan rotasi. Lihat [JWT](#autentikasi-jwt-dan-hashing-password-rancangan).
+
+| Kolom | Tipe DB | Keterangan |
+|---|---|---|
+| `jti` | uuid | Primary key. Id unik refresh token (klaim `jti` JWT) |
+| `account_id` | integer | FK → `daftar_akun(id)`, `ON DELETE CASCADE` |
+| `token_version` | integer | Versi `token_version` akun saat diterbitkan; cocokkan saat verifikasi |
+| `expires_at` | timestamptz | Kedaluwarsa (mis. `now() + 7 hari`) |
+| `revoked_at` | timestamptz | `NULL` = aktif; diisi saat logout/pencabutan |
+| `replaced_by` | uuid | `jti` pengganti saat rotasi (opsional) |
+| `user_agent` | text | User-Agent saat login (jejak perangkat, opsional) |
+| `ip` | inet | IP saat diterbitkan (opsional) |
+| `created_at` | timestamptz | Default `now()` |
+
+Indeks: biasa pada `(account_id)`, `(expires_at)`; `jti` sudah PK.
+
 ### Ringkasan relasi
 
 ```text
 daftar_akun (id) ──┬──< bookings.account_id
-                   └──< admin_audit_log.actor_id
+                   ├──< admin_audit_log.actor_id
+                   └──< refresh_tokens.account_id
 
 vehicles (id) ──┬──< vehicle_locations.vehicle_id
                 ├──< bookings.vehicle_id
@@ -380,7 +401,7 @@ Aturan tarif supir (sesuai logika `../src/components/BookingModal.jsx`):
 
 ## Autentikasi (TERIMPLEMENTASI)
 
-Endpoint ini sudah ada di `backend/server.js`. Belum ada token/sesi — login hanya mengembalikan data user; frontend menyimpan state `isLoggedIn` di memori.
+Endpoint ini sudah ada di `backend/server.js`. Belum ada token/sesi — login hanya mengembalikan data user; frontend menyimpan state `isLoggedIn` di memori. Rancangan token JWT dan kebijakan hashing ada di [Autentikasi JWT dan hashing password](#autentikasi-jwt-dan-hashing-password-rancangan).
 
 ### `POST /api/register`
 
@@ -444,14 +465,139 @@ Error:
 
 Tes server dan koneksi database. Respons `200` teks `"Backend Rent-Go aktif dan PostgreSQL terhubung!"`; `500` teks jika database gagal.
 
-## Rancangan lanjutan autentikasi
+## Autentikasi JWT dan hashing password (RANCANGAN)
 
-Saat ini tidak ada token. Jika autentikasi penuh diaktifkan, tambahkan:
+Endpoint `/api/register` dan `/api/login` sudah jalan; password sudah di-hash bcrypt tetapi **belum ada token/sesi** — login hanya mengembalikan data user dan frontend menyimpan `isLoggedIn` di memori. Rancangan berikut menambahkan **JWT** (access + refresh token) dan memperketat kebijakan hashing/password. Status register/login tetap TERIMPLEMENTASI; perubahan terkait token di sini adalah RANCANGAN.
 
-- `POST /api/auth/refresh` — perbarui access token via refresh token (disarankan cookie `HttpOnly`, `Secure`, `SameSite`).
-- `POST /api/auth/logout` — cabut sesi; respons `204`.
-- Endpoint privat memakai header `Authorization: Bearer <accessToken>`.
-- Login sebaiknya tidak membocorkan apakah email ada (gabungkan `404` dan `401` menjadi satu pesan `401` "Email atau password salah").
+### Hashing password
+
+| Aspek | Kebijakan |
+|---|---|
+| Algoritma | `bcrypt` (sudah dipakai `/api/register`) |
+| Cost factor | 10 rounds (sama dengan implementasi saat ini) |
+| Verifikasi | `bcrypt.compare(plain, hash)` saat login; jangan bandingkan string plain |
+| Penyimpanan | Hanya hash di kolom `daftar_akun.pw`; tidak pernah dikembalikan ke klien; tidak dicatat ke log |
+| Input password | Panjang 8–72 byte (min 8 kekuatan, max 72 batas input bcrypt). Disarankan mengandung huruf dan angka |
+| Ganti password | Endpoint `POST /api/auth/password` (butuh access token). Hash ulang dengan bcrypt 10, perbarui `daftar_akun.pw`, naikkan `token_version`, isi `password_changed_at`, cabut semua `refresh_tokens` akun |
+| Reset password | `POST /api/auth/password/reset` mengirim email berisi token reset. Token disimpan **hashed** + kedaluwarsa pendek (mis. 30 menit) + sekali pakai. `POST /api/auth/password/reset/confirm` untuk menetapkan password baru |
+
+### JWT (JSON Web Token)
+
+Dua token diterbitkan saat login:
+
+| Token | Umur | Penyimpanan | Kegunaan |
+|---|---|---|---|
+| Access token | Pendek (mis. 15 menit) | Memori aplikasi (state React), dikirim via header `Authorization: Bearer` | Mengakses endpoint privat |
+| Refresh token | Panjang (mis. 7 hari) | Cookie `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/api/auth` | Meminta access token baru |
+
+Catatan:
+- Access token **tidak** disimpan di `localStorage` (rentan XSS); simpan di memori aplikasi.
+- Refresh token via cookie `HttpOnly` sehingga tidak dapat diakses JavaScript.
+- Saat logout, tandai refresh token `revoked_at` dan hapus cookie.
+
+Algoritma tanda tangan:
+- `HS256` dengan `JWT_SECRET` dari environment (minimal 32 byte acak). Rotasi secret berkala; rotasi membatalkan seluruh access token.
+- Skala besar boleh `RS256` dengan pasangan kunci publik/privat.
+
+Klaim access token:
+
+```json
+{
+  "sub": 1,
+  "email": "alex@example.com",
+  "role": "customer",
+  "ver": 0,
+  "iat": 1731387600,
+  "exp": 1731388500
+}
+```
+
+Klaim refresh token:
+
+```json
+{ "sub": 1, "jti": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "ver": 0, "iat": 1731387600, "exp": 1731992400 }
+```
+
+- `sub`: id akun (`daftar_akun.id`).
+- `role`: `customer` atau `admin` — mengendalikan [endpoint admin](#endpoint-admin-rancangan).
+- `ver`: `token_version` akun; middleware mencocokkan dengan nilai di DB untuk membatalkan token lama saat ganti/reset password.
+- `jti`: id unik refresh token; dicocokkan dengan baris di tabel `refresh_tokens`.
+
+### Endpoint
+
+#### `POST /api/login` (perluasan TERIMPLEMENTASI)
+
+Request sama dengan implementasi saat ini. Rancangan menambahkan penerbitan token. Respons `200`:
+
+```json
+{
+  "message": "Login berhasil.",
+  "user": { "id": 1, "nama": "Alexander Pratama", "email": "alex@example.com", "role": "customer" },
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiresIn": 900
+}
+```
+
+Refresh token di-set via cookie `HttpOnly` (`Set-Cookie: refresh=...; HttpOnly; Secure; SameSite=Lax; Path=/api/auth; Max-Age=604800`).
+
+Perubahan keamanan:
+- Gabungkan `404` dan `401` menjadi satu respons `401` "Email atau password salah." agar tidak membocorkan apakah email terdaftar.
+- Rate limit per IP (mis. 5 upaya/menit).
+
+#### `POST /api/auth/refresh`
+
+Body kosong; refresh token diambil dari cookie. Validasi: token valid, belum kedaluwarsa, `jti` ada di `refresh_tokens` dengan `revoked_at IS NULL`, dan `ver` cocok `token_version` akun. Respons `200`:
+
+```json
+{ "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "expiresIn": 900 }
+```
+
+Disarankan rotasi refresh token: tandai token lama `revoked_at` dan terbitkan token baru (`replaced_by`). Error `401`: `invalid_refresh_token` / `expired_refresh_token`.
+
+#### `POST /api/auth/logout`
+
+Memakai access token (header) atau cukup cookie refresh. Mencabut refresh token aktif (`revoked_at = now()`) dan menghapus cookie. Respons `204`.
+
+#### `POST /api/auth/verify`
+
+Validasi access token di header. Respons `200`:
+
+```json
+{ "data": { "userId": 1, "role": "customer" } }
+```
+
+`401` jika token tidak valid/kedaluwarsa. Dipakai frontend untuk memastikan sesi setelah reload.
+
+#### `POST /api/auth/password` (ganti password)
+
+Header access token wajib. Request:
+
+```json
+{ "currentPassword": "rahasia123", "newPassword": "rahasiaBaru123" }
+```
+
+Verifikasi `currentPassword` via `bcrypt.compare`; hash `newPassword` (bcrypt 10); perbarui `daftar_akun.pw`, naikkan `token_version`, isi `password_changed_at`, cabut semua `refresh_tokens` akun. Respons `200` `{ "message": "Password berhasil diubah." }`. `401` jika `currentPassword` salah; `422` jika `newPassword` tidak memenuhi aturan panjang.
+
+#### `POST /api/auth/password/reset` (minta reset)
+
+Request: `{ "email": "alex@example.com" }`. Selalu respons `204` terlepas dari ada/tidaknya email (jangan membocorkan keberadaan akun). Jika akun ada, simpan token reset **hashed** dengan kedaluwarsa 30 menit lalu kirim email berisi tautan reset.
+
+#### `POST /api/auth/password/reset/confirm`
+
+Request: `{ "token": "...", "newPassword": "rahasiaBaru123" }`. Validasi token (hashed, belum kedaluwarsa, belum dipakai); hash password baru; perbarui akun; naikkan `token_version`; tandai token reset terpakai. Respons `200` `{ "message": "Password berhasil direset." }`. `401`/`410` jika token tidak valid/kedaluwarsa.
+
+### Middleware otorisasi
+
+- `requireAuth`: verifikasi `Authorization: Bearer <accessToken>` — cek signature, `exp`, dan `ver` vs `token_version` di DB (boleh cache singkat). Tolak dengan `401` bila gagal.
+- `requireRole('admin')`: lanjutan setelah `requireAuth`; cek `role === 'admin'`; tolak dengan `403` bila bukan.
+
+Respons `401` standar (endpoint privat memakai pembungkus [Bentuk respons](#bentuk-respons)):
+
+```json
+{ "error": { "code": "invalid_token", "message": "Token tidak valid atau kedaluwarsa." } }
+```
+
+Kode error autentikasi: `invalid_token`, `expired_token`, `invalid_refresh_token`, `expired_refresh_token`.
 
 ## Lokasi hub (RANCANGAN)
 
@@ -604,7 +750,10 @@ Semua aksi admin harus mencatat actor, waktu, dan perubahan status untuk audit (
 ## Keamanan dan aturan implementasi
 
 - Validasi input dan otorisasi dilakukan server; jangan percaya tarif, total, role, atau status dari browser.
-- Password disimpan sebagai hash bcrypt (sudah diterapkan di `/api/register`); gunakan HTTPS, rate limit login, dan pesan kredensial gagal yang tidak membocorkan akun.
+- Password disimpan sebagai hash bcrypt 10 rounds (sudah diterapkan di `/api/register`); verifikasi memakai `bcrypt.compare`; tidak pernah dikembalikan ke klien atau dicatat ke log. Aturan input 8–72 byte.
+- Autentikasi token memakai JWT: access token jangka pendek (mis. 15 menit) di memori klien + refresh token jangka panjang (mis. 7 hari) di cookie `HttpOnly`/`Secure`/`SameSite=Lax`. Lihat [Autentikasi JWT](#autentikasi-jwt-dan-hashing-password-rancangan).
+- `JWT_SECRET` minimal 32 byte acak dari environment; rotasi berkala. Pembatalan token via `token_version` (ganti/reset password) dan `revoked_at` pada `refresh_tokens` (logout).
+- Gunakan HTTPS, rate limit login, dan pesan kredensial gagal yang tidak membocorkan akun ("Email atau password salah.").
 - Lindungi endpoint admin dengan role-based access control. Batasi akses data pribadi dan jangan mencatat password/token/nomor telepon penuh ke log.
 - Booking dan penguncian rentang ketersediaan dibuat atomik (transaksi DB) untuk mencegah double booking.
 - Nomor telepon disimpan dalam format E.164; tanggal dikirim ISO 8601 dengan offset zona waktu.
@@ -619,6 +768,10 @@ Semua aksi admin harus mencatat actor, waktu, dan perubahan status untuk audit (
 | `POST /api/login` | Terimplementasi |
 | `POST /api/auth/refresh` | Rancangan |
 | `POST /api/auth/logout` | Rancangan |
+| `POST /api/auth/verify` | Rancangan |
+| `POST /api/auth/password` (ganti password) | Rancangan |
+| `POST /api/auth/password/reset` | Rancangan |
+| `POST /api/auth/password/reset/confirm` | Rancangan |
 | `GET /api/locations` | Rancangan |
 | `GET /api/vehicles` | Rancangan |
 | `GET /api/vehicles/{id}` | Rancangan |
