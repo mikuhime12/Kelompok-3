@@ -6,11 +6,56 @@ export default function LoginScreen({ onLogin }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [feedback, setFeedback] = useState('');
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    onLogin();
-  };
+
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  setFeedback("");
+
+  const endpoint = isRegistering
+    ? "/api/register"
+    : "/api/login";
+
+  const payload = isRegistering
+    ? { nama: name, email, password }
+    : { email, password };
+
+  try {
+    const response = await fetch(
+      `http://localhost:3000${endpoint}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setFeedback(data.message || "Permintaan gagal.");
+      return;
+    }
+
+    if (isRegistering) {
+      setFeedback("Registrasi berhasil. Silakan login.");
+      setIsRegistering(false);
+      setPassword("");
+    } else {
+      setFeedback("Login berhasil.");
+      onLogin(data.user);
+    }
+  } catch (error) {
+    console.error("Permintaan gagal:", error);
+    setFeedback(
+      "Server tidak dapat dihubungi. Periksa backend Rent-Go."
+    );
+  }
+};
+
 
   return (
     <main className="min-h-screen bg-[#f4f5ef] p-4 sm:p-8 flex items-center justify-center">
@@ -98,6 +143,10 @@ export default function LoginScreen({ onLogin }) {
             <button type="submit" className="w-full h-12 rounded-xl bg-[#173c35] hover:bg-[#20564b] text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors">
               {isRegistering ? 'Daftar' : 'Masuk'} <ArrowRight className="w-4 h-4" />
             </button>
+            {feedback && (
+            <p className="mt-4 text-center text-sm" role="status">
+            {feedback}
+            </p>)}
           </form>
           <p className="text-sm text-slate-600 mt-6 text-center">
             {isRegistering ? 'Sudah punya akun?' : 'Belum punya akun?'}{' '}
@@ -109,7 +158,6 @@ export default function LoginScreen({ onLogin }) {
               {isRegistering ? 'Masuk' : 'Daftar'}
             </button>
           </p>
-          <p className="text-[11px] text-slate-400 mt-4 leading-relaxed">Tampilan demo front end. Form ini belum terhubung ke sistem akun.</p>
         </section>
       </div>
     </main>
