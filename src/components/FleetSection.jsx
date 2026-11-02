@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Users, Gauge, Fuel, Zap } from 'lucide-react';
 import { CATEGORIES } from '../data/fleetData';
 
@@ -7,9 +8,11 @@ export default function FleetSection({
   setActiveCategory, 
   onSelectVehicle 
 }) {
+  const [showAllVehicles, setShowAllVehicles] = useState(false);
   const formatPrice = (price) => {
     return 'Rp ' + price.toLocaleString('id-ID');
   };
+  const visibleVehicles = showAllVehicles ? vehicles : vehicles.slice(0, 6);
 
   const getBadgeStyle = (badgeColor) => {
     switch (badgeColor) {
@@ -49,7 +52,10 @@ export default function FleetSection({
             <button
               key={cat}
               type="button"
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => {
+                setShowAllVehicles(false);
+                setActiveCategory(cat);
+              }}
               className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all ${
                 activeCategory === cat
                   ? 'bg-[#0e0c1f] text-white shadow-sm'
@@ -77,7 +83,7 @@ export default function FleetSection({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {vehicles.map((car) => (
+          {visibleVehicles.map((car) => (
             <div
               key={car.id}
               className="group bg-white rounded-2xl border border-slate-200/80 hover:border-purple-300 shadow-sm hover:shadow-xl hover:shadow-purple-900/5 transition-all duration-300 flex flex-col justify-between overflow-hidden"
@@ -93,7 +99,9 @@ export default function FleetSection({
                         e.target.src = car.fallbackImage;
                       }
                     }}
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                    className={`w-full h-full ${
+                      car.id === 'honda-pcx-160' ? 'object-contain p-2' : 'object-cover object-center'
+                    } group-hover:scale-105 transition-transform duration-500`}
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-transparent to-transparent pointer-events-none" />
@@ -174,6 +182,18 @@ export default function FleetSection({
 
             </div>
           ))}
+        </div>
+      )}
+
+      {vehicles.length > 6 && (
+        <div className="mt-8 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setShowAllVehicles(!showAllVehicles)}
+            className="px-5 py-3 rounded-xl bg-white border border-slate-200 text-sm font-bold text-slate-700 hover:border-purple-300 hover:text-purple-700 transition"
+          >
+            {showAllVehicles ? 'Tampilkan lebih sedikit' : 'Tampilkan lebih banyak'}
+          </button>
         </div>
       )}
 
