@@ -1,20 +1,51 @@
-# API Contract Rent-Go
+# API Contract — Frontend Rent-Go
 
-Dokumen ini mendefinisikan kontrak REST API untuk menghubungkan frontend rental Rent-Go dengan backend. Frontend saat ini masih memakai data statis dan simulasi login/pemesanan; endpoint di bawah adalah rancangan backend yang diperlukan.
+Dokumen ini adalah kontrak REST API dari sisi **klien** (React + Vite). Ditujukan untuk pengembang frontend: cara memanggil setiap endpoint, bentuk respons yang diharapkan, pemetaan elemen UI ke API, dan langkah migrasi dari data statis.
 
-## Konvensi
+Untuk perspektif server (rute, aturan validasi, skema database), lihat [`backend/API_CONTRACT.md`](backend/API_CONTRACT.md).
 
-- Base URL: `/api/v1`
-- Format: `application/json; charset=utf-8`
-- Waktu: ISO 8601 dengan zona waktu, misalnya `2026-10-12T09:00:00+07:00`.
-- Uang: bilangan bulat Rupiah (IDR), tanpa pemisah ribuan.
-- ID kendaraan/kota menggunakan slug; ID pemesanan berupa UUID.
-- Daftar menggunakan pagination `page` (mulai 1) dan `limit` (default 20, maksimum 100).
-- Endpoint privat memakai `Authorization: Bearer <accessToken>`.
+Setiap endpoint ditandai **TERIMPLEMENTASI** (sudah dipanggil frontend) atau **RANCANGAN** (saat ini frontend memakai data statis di `src/data/` dan simulasi).
 
-## Bentuk respons
+## Daftar isi
 
-Respons sukses berupa resource atau daftar. Respons daftar:
+1. [Konfigurasi koneksi](#konfigurasi-koneksi)
+2. [Bentuk respons yang diharapkan](#bentuk-respons-yang-diharapkan)
+3. [Model data](#model-data)
+4. [Autentikasi (TERIMPLEMENTASI)](#autentikasi-terimplementasi)
+5. [Lokasi hub (RANCANGAN)](#lokasi-hub-rancangan)
+6. [Armada kendaraan (RANCANGAN)](#armada-kendaraan-rancangan)
+7. [Pemesanan (RANCANGAN)](#pemesanan-rancangan)
+8. [Pemetaan UI ke API](#pemetaan-ui-ke-api)
+9. [Catatan migrasi dari data statis](#catatan-migrasi-dari-data-statis)
+
+## Konfigurasi koneksi
+
+- Base URL backend: saat ini **di-hardcode** `http://localhost:3000` di `src/components/LoginScreen.jsx`.
+- Pindahkan ke variabel environment: buat `.env` dengan `VITE_API_URL=http://localhost:3000`, lalu pakai `import.meta.env.VITE_API_URL` di seluruh kode.
+- CORS backend mengizinkan origin frontend (default `http://localhost:5173`, dev server Vite). Untuk menghindari masalah CORS, alternatifnya tambahkan proxy di `vite.config.js` agar request `/api/*` diteruskan ke `http://localhost:3000`.
+- Format: `application/json; charset=utf-8`. Selalu kirim header `Content-Type: application/json` pada `POST`/`PATCH`.
+
+## Bentuk respons yang diharapkan
+
+### Endpoint autentikasi (TERIMPLEMENTASI)
+
+Mengembalikan objek langsung dengan field `message` dan (jika sukses) `user`:
+
+```json
+{ "message": "Login berhasil.", "user": { "id": 1, "nama": "Alexander Pratama", "email": "alex@example.com" } }
+```
+
+Error: `{ "message": "..." }` dengan kode HTTP `400`/`401`/`404`/`409`/`500`. Gunakan `response.ok` untuk menentukan sukses/gagal, lalu tampilkan `data.message`.
+
+### Endpoint rancangan
+
+Objek tunggal:
+
+```json
+{ "data": { } }
+```
+
+Daftar dengan pagination:
 
 ```json
 {
@@ -23,7 +54,7 @@ Respons sukses berupa resource atau daftar. Respons daftar:
 }
 ```
 
-Respons error konsisten:
+Error:
 
 ```json
 {
@@ -35,11 +66,15 @@ Respons error konsisten:
 }
 ```
 
-Kode HTTP umum: `200` berhasil, `201` dibuat, `204` berhasil tanpa body, `400` format/parameter salah, `401` belum terautentikasi, `403` tidak berwenang, `404` tidak ditemukan, `409` konflik ketersediaan, `422` validasi gagal, `429` terlalu banyak permintaan, `500` kesalahan server.
+> Catatan: format autentikasi (`{message, user}`) dan rancangan (`{data}`/`{error}`) saat ini berbeda. Saat backend menerapkan endpoint rancangan, samakan formatnya. Pertimbangkan helper `apiFetch()` yang menangani kedua bentuk secara transisi.
 
-## Model resource
+## Model data
 
-### Vehicle
+Bentuk ini persis sama dengan data statis di `src/data/`, agar cukup mengganti import dengan `fetch` tanpa mengubah struktur komponen.
+
+### Vehicle (armada)
+
+Sesuai `src/data/fleetData.js`:
 
 ```json
 {
@@ -47,25 +82,39 @@ Kode HTTP umum: `200` berhasil, `201` dibuat, `204` berhasil tanpa body, `400` f
   "name": "Toyota Innova Zenix Hybrid",
   "category": "MPV Premium",
   "type": "car",
-  "year": 2024,
+  "year": "2024",
+  "badge": "HYBRID",
+  "badgeColor": "emerald",
   "description": "MPV nyaman untuk perjalanan keluarga & dinas bisnis",
-  "imageUrl": "https://cdn.example.com/vehicles/zenix.jpg",
-  "fallbackImageUrl": "https://cdn.example.com/vehicles/fallback.jpg",
-  "seats": 7,
-  "transmission": "CVT",
+  "image": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+  "fallbackImage": "https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=800&q=80",
+  "seats": "7 Kursi",
+  "transmission": "Matic (CVT)",
   "fuel": "Hybrid",
-  "pricePerDay": 650000,
-  "priceUnit": "day",
+  "price": 650000,
+  "priceUnit": "/ hari",
   "rating": 4.9,
-  "tripCount": 184,
-  "available": true,
-  "supportedRentalTypes": ["self", "driver"]
+  "trips": 184
 }
 ```
 
-`type`: `car` atau `motor`; `priceUnit`: `day` atau `12_hours`. Nilai `category` mengikuti kategori katalog (mis. `City Car`, `Family SUV`, `MPV Premium`, `Mobil Listrik (EV)`, `Sewa Motor`). Harga dan ketersediaan harus berasal dari backend.
+Aturan field penting:
+- `type`: `car`, `motor`, atau `luxury`. Tab `Mobil` menampilkan `car` **dan** `luxury`; tab `Motor` hanya `motor`.
+- `category`: `City Car`, `Family SUV`, `MPV Premium`, `Mobil Listrik (EV)`, `Sewa Motor`. `Semua` hanya filter UI.
+- `priceUnit`: `"/ hari"` atau `"/ 12 Jam"`.
+- `fuel`: bisa `Hybrid`, `Full Listrik`, `Bensin`, atau `Termasuk Supir`. Jika `Termasuk Supir`, jangan tambahkan biaya supir.
 
-### Booking
+### Hub (lokasi)
+
+Sesuai `src/data/hubsData.js`:
+
+```json
+{ "id": "jakarta", "code": "Jakarta", "name": "Area pusat kota", "status": "24 Jam Ready", "city": "Jakarta", "icon": "building", "color": "teal" }
+```
+
+ID hub: `jakarta`, `dps` (Bali), `sub` (Surabaya), `yia` (Yogyakarta), `bdo` (Bandung). `code` adalah nama tampilan kota.
+
+### Booking (pemesanan)
 
 ```json
 {
@@ -89,64 +138,112 @@ Kode HTTP umum: `200` berhasil, `201` dibuat, `204` berhasil tanpa body, `400` f
 }
 ```
 
-Status: `pending_confirmation`, `confirmed`, `ongoing`, `completed`, `cancelled`, `rejected`. Tarif supir (saat ini UI mengasumsikan Rp200.000/hari) ditentukan dan dikonfirmasi server. Untuk unit yang sudah termasuk sopir, backend tidak menambahkan tarif sopir lagi.
+Status: `pending_confirmation`, `confirmed`, `ongoing`, `completed`, `cancelled`, `rejected`.
 
-## Endpoint publik
+## Autentikasi (TERIMPLEMENTASI)
 
-### `GET /locations`
+Sudah dipanggil dari `src/components/LoginScreen.jsx`. Login hanya mengembalikan data user (tanpa token); state `isLoggedIn` disimpan di memori `App.jsx`.
 
-Daftar hub kota untuk pemilih lokasi.
+### `POST /api/register` — pendaftaran
+
+Request:
+
+```json
+{ "nama": "Alexander Pratama", "email": "alex@example.com", "password": "rahasia123" }
+```
+
+Sukses `201`:
+
+```json
+{ "message": "Registrasi berhasil. Silakan login.", "user": { "id": 1, "nama": "Alexander Pratama", "email": "alex@example.com" } }
+```
+
+Error yang mungkin (tampilkan `message` ke pengguna):
+- `400` — `{ "message": "Nama, email, dan password wajib diisi." }` (atau format email / password terlalu panjang)
+- `409` — `{ "message": "Email sudah terdaftar." }`
+
+Implementasi saat ini: setelah registrasi sukses, tampilkan pesan lalu alihkan ke form login (`setIsRegistering(false)`).
+
+### `POST /api/login` — masuk
+
+Request:
+
+```json
+{ "email": "alex@example.com", "password": "rahasia123" }
+```
+
+Sukses `200`:
+
+```json
+{ "message": "Login berhasil.", "user": { "id": 1, "nama": "Alexander Pratama", "email": "alex@example.com" } }
+```
+
+Error yang mungkin:
+- `400` — `{ "message": "Email dan password wajib diisi." }`
+- `404` — `{ "message": "Akun belum terdaftar." }`
+- `401` — `{ "message": "Email atau password salah." }`
+
+Implementasi saat ini: saat sukses panggil `onLogin(data.user)` untuk set `isLoggedIn = true` di `App.jsx`.
+
+## Lokasi hub (RANCANGAN)
+
+### `GET /api/locations`
+
+Menggantikan `src/data/hubsData.js`. Dipakai `src/components/LocationsSection.jsx`.
 
 Respons `200`:
 
 ```json
-{ "data": [
-  { "id": "jakarta", "city": "Jakarta", "name": "Area pusat kota", "status": "24 Jam Ready" },
-  { "id": "bali", "city": "Bali", "name": "Kuta dan Denpasar", "status": "24 Jam Ready" }
-] }
+{
+  "data": [
+    { "id": "jakarta", "code": "Jakarta", "name": "Area pusat kota", "status": "24 Jam Ready", "city": "Jakarta", "icon": "building", "color": "teal" },
+    { "id": "dps", "code": "Bali", "name": "Kuta dan Denpasar", "status": "24 Jam Ready", "city": "Bali", "icon": "palmtree", "color": "purple" },
+    { "id": "sub", "code": "Surabaya", "name": "Area pusat kota", "status": "06.00-23.00", "city": "Surabaya", "icon": "building", "color": "blue" },
+    { "id": "yia", "code": "Yogyakarta", "name": "Malioboro dan sekitarnya", "status": "24 Jam Ready", "city": "Yogyakarta", "icon": "landmark", "color": "indigo" },
+    { "id": "bdo", "code": "Bandung", "name": "Area pusat kota", "status": "24 Jam Ready", "city": "Bandung", "icon": "train", "color": "purple" }
+  ]
+}
 ```
 
-### `GET /vehicles`
+Pemakaian: `data[i]` langsung menggantikan objek hub di `HUBS`. Field `icon`/`color` dipakai untuk styling; `id` dipakai sebagai `cityId` untuk query armada/pemesanan.
 
-Daftar armada, pencarian, filter, dan ketersediaan. Query opsional:
+## Armada kendaraan (RANCANGAN)
 
-| Parameter | Tipe | Keterangan |
-|---|---|---|
-| `q` | string | Cari nama, deskripsi, kategori, bahan bakar |
-| `type` | `car\|motor` | Jenis kendaraan |
-| `category` | string | Kategori yang persis, kecuali `Semua` tidak dikirim |
-| `cityId` | string | Filter kota |
-| `rentalType` | `self\|driver` | Mode sewa |
-| `pickupAt`, `returnAt` | datetime | Jika keduanya ada, hanya unit yang tersedia pada rentang itu |
-| `page`, `limit` | integer | Pagination |
+### `GET /api/vehicles`
 
-Contoh: `GET /vehicles?type=car&cityId=jakarta&pickupAt=2026-10-15T09%3A00%3A00%2B07%3A00&returnAt=2026-10-17T09%3A00%3A00%2B07%3A00`.
+Menggantikan `src/data/fleetData.js` + logika filter `src/App.jsx`. Pilih query sesuai state UI:
 
-Respons `200`: bentuk daftar standar dengan elemen `Vehicle`.
+| State UI (App.jsx) | Query API |
+|---|---|
+| Tab `Mobil` (`selectedVehicleType === 'car'`) | `type=car` (server kembalikan `car` + `luxury`) |
+| Tab `Motor` (`selectedVehicleType === 'motor'`) | `type=motor` |
+| Kategori aktif (mis. `MPV Premium`) | `category=MPV%20Premium` (jangan kirim `Semua`) |
+| Input pencarian (`searchQuery`) | `q=<teks>` (cocok `name`/`description`/`category`/`fuel`, case-insensitive) |
+| Kota terpilih (`activeLocation`, nama kota) | `cityId=<slug>` — perlu memetakan nama kota → slug hub (mis. `Jakarta` → `jakarta`, `Bali` → `dps`) |
+| Mode sewa (`rentalType`) | `rentalType=self\|driver` |
+| Widget tanggal (`pickupDate`/`returnDate`) | `pickupAt` & `returnAt` ISO 8601 — input teks saat ini harus diubah ke `datetime-local` |
 
-### `GET /vehicles/{vehicleId}`
+Contoh: `GET /api/vehicles?type=car&cityId=jakarta&pickupAt=2026-10-15T09%3A00%3A00%2B07%3A00&returnAt=2026-10-17T09%3A00%3A00%2B07%3A00`.
 
-Detail kendaraan dan ketentuan sewanya. `200` mengembalikan `data: Vehicle`; `404` jika ID tidak ada.
+Respons `200`: `{ "data": [Vehicle, ...], "meta": {...} }`. Ganti `VEHICLES` statis dengan `data`; paginasi via `meta`.
 
-### `GET /vehicles/{vehicleId}/availability`
+### `GET /api/vehicles/{vehicleId}`
+
+Detail satu kendaraan. `200`: `{ "data": Vehicle }`. `404` jika ID tidak ada.
+
+### `GET /api/vehicles/{vehicleId}/availability`
 
 Query wajib: `cityId`, `pickupAt`, `returnAt`; opsional `rentalType`. Respons `200`:
 
 ```json
-{
-  "data": {
-    "available": true,
-    "vehicleId": "zenix-hybrid",
-    "cityId": "jakarta",
-    "pickupAt": "2026-10-15T09:00:00+07:00",
-    "returnAt": "2026-10-17T09:00:00+07:00"
-  }
-}
+{ "data": { "available": true, "vehicleId": "zenix-hybrid", "cityId": "jakarta", "pickupAt": "2026-10-15T09:00:00+07:00", "returnAt": "2026-10-17T09:00:00+07:00" } }
 ```
 
-### `POST /bookings/quote`
+## Pemesanan (RANCANGAN)
 
-Validasi ketersediaan dan hitung harga sebelum konfirmasi.
+Menggantikan simulasi `setIsSuccess(true)` di `src/components/BookingModal.jsx`.
+
+### `POST /api/bookings/quote` — cek harga sebelum konfirmasi
 
 Request:
 
@@ -160,11 +257,30 @@ Request:
 }
 ```
 
-Respons `200`: `{ "data": { "available": true, "durationDays": 2, "priceBreakdown": { "vehicleSubtotal": 1300000, "driverSubtotal": 400000, "discount": 0, "total": 1700000, "currency": "IDR" }, "expiresAt": "2026-10-12T08:10:00+07:00" } }`. Respons `409` jika unit tidak tersedia. Quote berumur pendek dan harga final dihitung ulang saat membuat booking.
+Respons `200`:
 
-### `POST /bookings`
+```json
+{
+  "data": {
+    "available": true,
+    "durationDays": 2,
+    "priceBreakdown": {
+      "vehicleSubtotal": 1300000,
+      "driverSubtotal": 400000,
+      "discount": 0,
+      "total": 1700000,
+      "currency": "IDR"
+    },
+    "expiresAt": "2026-10-12T08:10:00+07:00"
+  }
+}
+```
 
-Buat permintaan pemesanan. Login tidak wajib untuk alur UI saat ini; backend boleh membuat booking tamu. Gunakan `Idempotency-Key` agar pengulangan permintaan tidak membuat booking ganda.
+Respons `409` jika tidak tersedia. Tampilkan `data.priceBreakdown` di ringkasan harga modal.
+
+### `POST /api/bookings` — buat pemesanan
+
+Header: `Idempotency-Key: <uuid>` agar pengulangan tidak membuat booking ganda.
 
 Request:
 
@@ -179,60 +295,61 @@ Request:
 }
 ```
 
-Validasi: semua field wajib; `returnAt` harus setelah `pickupAt`; kendaraan dan kota harus aktif; mode rental harus didukung kendaraan; telepon harus nomor yang dapat dihubungi. Respons `201` mengembalikan Booking status `pending_confirmation`; `409` jika kendaraan baru saja dipesan orang lain. Jangan menerima harga dari klien sebagai sumber kebenaran.
+Respons `201`: Booking status `pending_confirmation`. `409` jika kendaraan baru saja dipesan orang lain. Saat sukses, ganti tampilan "Pemesanan Berhasil Disiapkan!" dengan status dari `data.status`; simpan `data.id` untuk cek status nanti.
 
-### `GET /bookings/{bookingId}`
+Aturan tarif supir (sesuai `BookingModal.jsx` saat ini):
+- Tarif supir Rp200.000/hari ditambahkan hanya bila `type !== 'motor'`, opsi supir dipilih, dan `fuel !== 'Termasuk Supir'`.
+- Kendaraan dengan `fuel: 'Termasuk Supir'` atau `type: 'motor'`: tanpa biaya supir.
+- Harga final selalu dari server — jangan kirim total dari klien.
 
-Lihat status booking tamu dengan token akses booking (mis. token acak yang dikirim saat booking) atau autentikasi pemilik. Respons `200` mengembalikan Booking; `404` untuk booking/token yang tidak cocok.
+### `GET /api/bookings/{bookingId}` — cek status
 
-### `POST /bookings/{bookingId}/cancel`
+`200`: `{ "data": Booking }`. `404` jika booking/token tidak cocok.
 
-Batalkan permintaan booking. Request opsional `{"reason":"Perubahan jadwal"}`. `200` mengembalikan booking terbaru. `409` jika status tidak bisa dibatalkan atau jangka gratis pembatalan sudah lewat.
+### `POST /api/bookings/{bookingId}/cancel` — batalkan
 
-## Autentikasi dan pengguna
+Request opsional `{ "reason": "Perubahan jadwal" }`. `200`: booking terbaru. `409` jika tidak bisa dibatalkan (gratis pembatalan s/d 24 jam sesuai UI).
 
-Form login yang ada belum terhubung ke akun. Jika autentikasi akun diaktifkan:
+## Pemetaan UI ke API
 
-### `POST /auth/login`
+| Elemen UI | File | API | Status |
+|---|---|---|---|
+| Form login/daftar | `src/components/LoginScreen.jsx` | `POST /api/login`, `POST /api/register` | Terimplementasi |
+| Hub lokasi | `src/components/LocationsSection.jsx` → `src/data/hubsData.js` | `GET /api/locations` | Rancangan |
+| Pencarian/kategori armada | `src/App.jsx`, `src/components/FleetSection.jsx` → `src/data/fleetData.js` | `GET /api/vehicles` | Rancangan |
+| Pilih kendaraan | `src/components/FleetSection.jsx` | `GET /api/vehicles/{vehicleId}` | Rancangan |
+| Widget pencarian (kota, tanggal, tipe, mode sewa) | `src/components/BookingWidget.jsx` | `GET /api/vehicles` dengan query | Rancangan |
+| Form nama, WhatsApp, durasi, sopir | `src/components/BookingModal.jsx` | `POST /api/bookings/quote`, lalu `POST /api/bookings` | Rancangan |
+| Pesan berhasil | `src/components/BookingModal.jsx` (simulasi `setIsSuccess`) | tampilkan respons `pending_confirmation`, simpan ID/token | Rancangan |
+| Cek status pemesanan | — | `GET /api/bookings/{bookingId}` | Rancangan |
+| Batalkan pemesanan | — | `POST /api/bookings/{bookingId}/cancel` | Rancangan |
+| Bantuan WhatsApp | `src/components/Navbar.jsx` (`wa.me/6281234567890`) | — | Statis, bukan API |
 
-Request `{"email":"user@example.com","password":"..."}`. Respons `200`: `{"data":{"accessToken":"...","tokenType":"Bearer","expiresIn":3600,"user":{"id":"...","name":"...","email":"...","role":"customer"}}}`. Gagal `401` untuk kredensial salah.
+## Catatan migrasi dari data statis
 
-### `POST /auth/refresh` dan `POST /auth/logout`
+Pertahankan nama field persis seperti di `src/data/fleetData.js` dan `src/data/hubsData.js` agar cukup mengganti import statis dengan `fetch` tanpa mengubah struktur komponen.
 
-Refresh memakai refresh token (disarankan cookie `HttpOnly`, `Secure`, `SameSite`) dan mengembalikan token baru. Logout mencabut sesi; respons `204`.
+Langkah konkret per file:
 
-## Endpoint admin (cakupan README)
+1. `src/components/LoginScreen.jsx`
+   - Ganti `http://localhost:3000` dengan `import.meta.env.VITE_API_URL`.
+   - (Opsional) tangani kedua bentuk respons saat format disamukan backend.
 
-Endpoint berikut memerlukan role `admin`; belum ada dashboard admin pada frontend saat ini.
+2. `src/data/hubsData.js`
+   - Gantikan `export const HUBS` dengan fetch ke `GET /api/locations`; simpan hasil ke state. Bisa jadikan data statis sebagai fallback bila API gagal.
 
-- `GET /admin/dashboard?from=&to=` — ringkasan pemesanan, pendapatan, utilisasi, dan aktivitas.
-- `GET /admin/vehicles` — daftar armada termasuk unit nonaktif.
-- `POST /admin/vehicles` — tambah kendaraan; `201`.
-- `PATCH /admin/vehicles/{vehicleId}` — ubah data/tarif/status kendaraan; `200`.
-- `DELETE /admin/vehicles/{vehicleId}` — arsipkan kendaraan; `204`; jangan hapus kendaraan yang punya riwayat booking.
-- `POST /admin/vehicles/{vehicleId}/image-upload` — buat URL upload bertanda tangan; setelah unggah, simpan metadata foto ke kendaraan.
-- `GET /admin/bookings?status=&from=&to=&page=&limit=` — daftar pemesanan.
-- `PATCH /admin/bookings/{bookingId}` — ubah status ke transisi yang diizinkan, mis. `pending_confirmation` → `confirmed` atau `rejected`.
-- `GET /admin/customers?page=&limit=` — daftar pelanggan.
+3. `src/data/fleetData.js`
+   - Gantikan `export const VEHICLES` dengan fetch ke `GET /api/vehicles` (dengan query filter). Hapus filter manual `useMemo` di `App.jsx` karena server sudah memfilter; gunakan `meta` untuk paginasi.
 
-Semua aksi admin harus mencatat actor, waktu, dan perubahan status untuk audit.
+4. `src/components/BookingWidget.jsx`
+   - Ubah input tanggal teks (`pickupDate`/`returnDate`) menjadi `<input type="datetime-local">` dan kirim ISO 8601 ke `pickupAt`/`returnAt`.
+   - Petakan nama kota (`location`) ke slug hub (`cityId`) — mis. `Jakarta` → `jakarta`, `Bali` → `dps`.
 
-## Keamanan dan aturan implementasi
+5. `src/components/BookingModal.jsx`
+   - Ganti `setIsSuccess(true)` dengan `POST /api/bookings/quote` → tampilkan `priceBreakdown`, lalu `POST /api/bookings` saat konfirmasi.
+   - Tampilkan `data.status` dari server; simpan `data.id` (dan token bila ada) untuk cek status.
+   - Hapus perhitungan harga lokal; andalkan harga server (tetap boleh tampilkan estimasi dari quote).
 
-- Validasi input dan otorisasi dilakukan server; jangan percaya tarif, total, role, atau status dari browser.
-- Password disimpan sebagai hash adaptif; gunakan HTTPS, rate limit login, dan pesan kredensial gagal yang tidak membocorkan akun.
-- Lindungi endpoint admin dengan role-based access control. Batasi akses data pribadi dan jangan mencatat password/token/nomor telepon penuh ke log.
-- Booking dan penguncian rentang ketersediaan dibuat atomik untuk mencegah double booking.
-- Nomor telepon disimpan dalam format E.164; tanggal dikirim ISO 8601 dengan offset zona waktu.
-- Gambar kendaraan dilayani melalui URL HTTPS CDN/object storage, bukan payload base64.
-
-## Pemetaan UI saat ini
-
-| Elemen UI | API |
-|---|---|
-| Hub lokasi | `GET /locations` |
-| Pencarian/kategori armada | `GET /vehicles` |
-| Pilih kendaraan | `GET /vehicles/{vehicleId}` |
-| Form nama, WhatsApp, durasi, sopir | `POST /bookings/quote`, lalu `POST /bookings` |
-| Pesan berhasil disiapkan | tampilkan respons `pending_confirmation`, simpan ID/token untuk cek status |
-| Login demo | `POST /auth/login` setelah autentikasi benar-benar dibangun |
+6. `src/App.jsx`
+   - Hapus `useMemo` filter karena server memfilter; simpan hasil `fetch` ke state dan gunakan `meta` untuk paginasi.
+   - `activeLocation` (nama kota) perlu dipetakan ke `cityId` slug untuk dikirim ke API.
