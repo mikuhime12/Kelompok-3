@@ -36,5 +36,5 @@ export const up = (pgm) => {
  */
 
 export const down = (pgm) => {
-  pgm.dropTable("migration_test");
+  pgm.dropTable("daftar_akun");
 };
