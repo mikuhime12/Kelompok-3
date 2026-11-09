@@ -52,31 +52,33 @@ export default function BookingWidget({
         {/* Top Header Switch / Tabs */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
           
-          {/* Left Toggle: Lepas Kunci vs Dengan Supir */}
-          <div className="inline-flex p-1 bg-slate-100/80 rounded-full border border-slate-200/60 self-start">
-            <button
-              type="button"
-              onClick={() => setRentalType('self')}
-              className={`px-4 sm:px-5 py-2 rounded-full text-xs font-bold transition-all ${
-                rentalType === 'self'
-                  ? 'bg-[#0e0c1f] text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Lepas Kunci (Self Drive)
-            </button>
-            <button
-              type="button"
-              onClick={() => setRentalType('driver')}
-              className={`px-4 sm:px-5 py-2 rounded-full text-xs font-bold transition-all ${
-                rentalType === 'driver'
-                  ? 'bg-[#0e0c1f] text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Dengan Supir (With Driver)
-            </button>
-          </div>
+          {/* Driver options are only available for cars. */}
+          {selectedVehicleType !== 'motor' ? (
+            <div className="inline-flex p-1 bg-slate-100/80 rounded-full border border-slate-200/60 self-start">
+              <button
+                type="button"
+                onClick={() => setRentalType('self')}
+                className={`px-4 sm:px-5 py-2 rounded-full text-xs font-bold transition-all ${
+                  rentalType === 'self'
+                    ? 'bg-[#0e0c1f] text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Lepas Kunci (Self Drive)
+              </button>
+              <button
+                type="button"
+                onClick={() => setRentalType('driver')}
+                className={`px-4 sm:px-5 py-2 rounded-full text-xs font-bold transition-all ${
+                  rentalType === 'driver'
+                    ? 'bg-[#0e0c1f] text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Dengan Supir (With Driver)
+              </button>
+            </div>
+          ) : null}
 
           {/* Vehicle type tabs */}
           <div className="flex items-center gap-2 self-start sm:self-auto overflow-x-auto pb-1 sm:pb-0">

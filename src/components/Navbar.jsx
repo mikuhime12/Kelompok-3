@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Headphones, Menu, X, LogOut, CarFront } from 'lucide-react';
 
-export default function Navbar({ onOpenBooking, onSelectCategory, onLogout }) {
+export default function Navbar({ onSelectCategory, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -43,7 +43,7 @@ export default function Navbar({ onOpenBooking, onSelectCategory, onLogout }) {
             <a 
               href="#armada" 
               className="text-sm font-semibold text-slate-700 hover:text-purple-700 transition"
-              onClick={() => onSelectCategory && onSelectCategory('Semua')}
+              onClick={() => onSelectCategory && onSelectCategory('Mobil')}
             >
               Sewa Mobil
             </a>
@@ -70,25 +70,10 @@ export default function Navbar({ onOpenBooking, onSelectCategory, onLogout }) {
             <button type="button" onClick={onLogout} className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-emerald-800 transition px-2 py-1.5">
               <LogOut className="w-3.5 h-3.5" /> Keluar
             </button>
-
-            <button
-              type="button"
-              onClick={onOpenBooking}
-              className="bg-[#173c35] hover:bg-[#20564b] active:scale-95 text-white text-xs font-bold px-5 py-2.5 rounded-full transition-all duration-200"
-            >
-              Sewa Sekarang
-            </button>
           </div>
 
           {/* Mobile Hamburger Button */}
           <div className="flex md:hidden items-center gap-2">
-            <button
-              type="button"
-              onClick={onOpenBooking}
-              className="bg-[#173c35] text-white text-xs font-bold px-3 py-2 rounded-full"
-            >
-              Sewa
-            </button>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -127,7 +112,7 @@ export default function Navbar({ onOpenBooking, onSelectCategory, onLogout }) {
               href="#armada"
               onClick={() => {
                 setMobileMenuOpen(false);
-                onSelectCategory && onSelectCategory('Semua');
+                onSelectCategory && onSelectCategory('Mobil');
               }}
               className="block py-2 text-sm font-semibold text-slate-700 hover:text-purple-700"
             >

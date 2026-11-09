@@ -23,16 +23,24 @@ export default function App() {
   // Filter vehicles based on active category, vehicle type tab, and search query
   const filteredVehicles = useMemo(() => {
     return VEHICLES.filter((vehicle) => {
-      // 1. Vehicle tab filter (if motor tab clicked)
-      if (selectedVehicleType === 'motor' && vehicle.type !== 'motor') {
-        return false;
-      }
-      if (selectedVehicleType === 'car' && vehicle.type === 'motor') {
-        return false;
+      // The "Semua" fleet tab includes every vehicle type.
+      if (activeCategory !== 'Semua') {
+        if (selectedVehicleType === 'motor' && vehicle.type !== 'motor') {
+          return false;
+        }
+        if (selectedVehicleType === 'car' && vehicle.type === 'motor') {
+          return false;
+        }
       }
 
-      // 2. Category tab filter
-      if (activeCategory !== 'Semua' && vehicle.category !== activeCategory) {
+      // 2. Fleet category tab filter
+      if (activeCategory === 'Mobil' && (vehicle.type === 'motor' || vehicle.category === 'Mobil Listrik (EV)')) {
+        return false;
+      }
+      if (activeCategory === 'Mobil Listrik' && vehicle.category !== 'Mobil Listrik (EV)') {
+        return false;
+      }
+      if (activeCategory === 'Motor' && vehicle.type !== 'motor') {
         return false;
       }
 
@@ -54,7 +62,10 @@ export default function App() {
 
   const handleBookingSearch = (searchData) => {
     setSelectedVehicleType(searchData.vehicleType);
-    setActiveCategory(searchData.vehicleType === 'motor' ? 'Sewa Motor' : 'Semua');
+    if (searchData.vehicleType === 'motor') {
+      setRentalType('self');
+    }
+    setActiveCategory(searchData.vehicleType === 'motor' ? 'Motor' : 'Mobil');
     setActiveLocation(searchData.location);
   };
 
@@ -69,7 +80,8 @@ export default function App() {
   const handleSelectNavCategory = (category) => {
     if (category === 'Sewa Motor') {
       setSelectedVehicleType('motor');
-      setActiveCategory('Sewa Motor');
+      setRentalType('self');
+      setActiveCategory('Motor');
     } else {
       setSelectedVehicleType('car');
       setActiveCategory(category);
@@ -84,7 +96,6 @@ export default function App() {
     <div className="min-h-screen bg-[#faf9fe] text-slate-800 font-sans selection:bg-purple-100 selection:text-purple-900 flex flex-col">
       {/* Top Navigation */}
       <Navbar 
-        onOpenBooking={() => setSelectedVehicleForBooking(VEHICLES[0])}
         onSelectCategory={handleSelectNavCategory}
         onLogout={() => setIsLoggedIn(false)}
       />
@@ -106,9 +117,10 @@ export default function App() {
             setSelectedVehicleType={(type) => {
               setSelectedVehicleType(type);
               if (type === 'motor') {
-                setActiveCategory('Sewa Motor');
-              } else if (activeCategory === 'Sewa Motor') {
-                setActiveCategory('Semua');
+                setRentalType('self');
+                setActiveCategory('Motor');
+              } else if (activeCategory === 'Motor') {
+                setActiveCategory('Mobil');
               }
             }}
             onSearch={handleBookingSearch}
@@ -120,7 +132,10 @@ export default function App() {
           vehicles={filteredVehicles}
           activeCategory={activeCategory}
           setActiveCategory={(category) => {
-            setSelectedVehicleType(category === 'Sewa Motor' ? 'motor' : 'car');
+            setSelectedVehicleType(category === 'Motor' ? 'motor' : 'car');
+            if (category === 'Motor') {
+              setRentalType('self');
+            }
             setActiveCategory(category);
           }}
           onSelectVehicle={(car) => setSelectedVehicleForBooking(car)}
