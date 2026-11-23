@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import LoginScreen from './components/LoginScreen';
 import Hero from './components/Hero';
@@ -7,10 +7,16 @@ import FleetSection from './components/FleetSection';
 import LocationsSection from './components/LocationsSection';
 import Footer from './components/Footer';
 import BookingModal from './components/BookingModal';
+import HistoryModal from './components/HistoryModal';
 import { VEHICLES } from './data/fleetData';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('rent-go-theme');
+    if (savedTheme) return savedTheme === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [rentalType, setRentalType] = useState('self'); // 'self' | 'driver'
@@ -19,6 +25,33 @@ export default function App() {
   // Modals state
   const [selectedVehicleForBooking, setSelectedVehicleForBooking] = useState(null);
   const [activeLocation, setActiveLocation] = useState('Jakarta');
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [bookingHistory, setBookingHistory] = useState(() => {
+    try {
+      const savedHistory = localStorage.getItem('rent-go-booking-history');
+      if (!savedHistory) return [];
+      const parsedHistory = JSON.parse(savedHistory);
+      return Array.isArray(parsedHistory) ? parsedHistory : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const saveBookingHistory = (booking) => {
+    setBookingHistory((currentHistory) => {
+      const nextHistory = [booking, ...currentHistory];
+      localStorage.setItem('rent-go-booking-history', JSON.stringify(nextHistory));
+      return nextHistory;
+    });
+  };
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    document.documentElement.style.colorScheme = isDarkMode ? 'dark' : 'light';
+    localStorage.setItem('rent-go-theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => setIsDarkMode((currentMode) => !currentMode);
 
   // Filter vehicles based on active category, vehicle type tab, and search query
   const filteredVehicles = useMemo(() => {
@@ -89,7 +122,13 @@ export default function App() {
   };
 
   if (!isLoggedIn) {
-    return <LoginScreen onLogin={() => setIsLoggedIn(true)} />;
+    return (
+      <LoginScreen
+        onLogin={() => setIsLoggedIn(true)}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={toggleDarkMode}
+      />
+    );
   }
 
   return (
@@ -98,6 +137,10 @@ export default function App() {
       <Navbar 
         onSelectCategory={handleSelectNavCategory}
         onLogout={() => setIsLoggedIn(false)}
+        onOpenHistory={() => setIsHistoryOpen(true)}
+        historyCount={bookingHistory.length}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={toggleDarkMode}
       />
 
       <main className="flex-grow">
@@ -158,6 +201,13 @@ export default function App() {
         isOpen={!!selectedVehicleForBooking}
         onClose={() => setSelectedVehicleForBooking(null)}
         defaultLocation={activeLocation}
+        onConfirm={saveBookingHistory}
+      />
+
+      <HistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        history={bookingHistory}
       />
 
     </div>

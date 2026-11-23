@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { ArrowRight, CarFront, KeyRound, Mail } from 'lucide-react';
+import { ArrowRight, CarFront, KeyRound, Mail, Moon, Sun } from 'lucide-react';
 
-export default function LoginScreen({ onLogin }) {
+export default function LoginScreen({ onLogin, isDarkMode, onToggleDarkMode }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -58,7 +58,16 @@ const handleSubmit = async (event) => {
 
 
   return (
-    <main className="min-h-screen bg-[#f4f5ef] p-4 sm:p-8 flex items-center justify-center">
+    <main className="relative min-h-screen bg-[#f4f5ef] p-4 sm:p-8 flex items-center justify-center">
+      <button
+        type="button"
+        onClick={onToggleDarkMode}
+        className="fixed top-4 right-4 z-10 w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:text-purple-700 transition flex items-center justify-center"
+        aria-label={isDarkMode ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
+        title={isDarkMode ? 'Mode terang' : 'Mode gelap'}
+      >
+        {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+      </button>
       <div className="w-full max-w-5xl min-h-[620px] grid lg:grid-cols-[1.05fr_0.95fr] bg-white rounded-[2rem] overflow-hidden shadow-2xl shadow-emerald-950/10">
         <section className="relative min-h-[270px] lg:min-h-full bg-[#173c35] text-white p-8 sm:p-12 flex flex-col justify-between overflow-hidden">
           <img

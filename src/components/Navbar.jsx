@@ -1,7 +1,14 @@
 import { useState } from 'react';
-import { Headphones, Menu, X, LogOut, CarFront } from 'lucide-react';
+import { Headphones, Menu, X, LogOut, CarFront, History, Moon, Sun } from 'lucide-react';
 
-export default function Navbar({ onSelectCategory, onLogout }) {
+export default function Navbar({
+  onSelectCategory,
+  onLogout,
+  onOpenHistory,
+  historyCount = 0,
+  isDarkMode,
+  onToggleDarkMode,
+}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -10,7 +17,12 @@ export default function Navbar({ onSelectCategory, onLogout }) {
         <div className="flex items-center justify-between h-20">
           
           {/* Brand Logo */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <button
+            type="button"
+            className="flex items-center gap-3 text-left"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            aria-label="Kembali ke atas"
+          >
             <div className="w-10 h-10 rounded-2xl bg-[#173c35] flex items-center justify-center text-[#d5f36a]">
               <CarFront className="w-5 h-5" />
             </div>
@@ -22,7 +34,7 @@ export default function Navbar({ onSelectCategory, onLogout }) {
                 RENTAL KENDARAAN
               </span>
             </div>
-          </div>
+          </button>
 
           {/* Center Navigation Links */}
           <nav className="hidden md:flex items-center gap-7">
@@ -56,7 +68,29 @@ export default function Navbar({ onSelectCategory, onLogout }) {
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="hidden lg:flex items-center gap-5">
+          <div className="hidden lg:flex items-center gap-4">
+            <button
+              type="button"
+              onClick={onToggleDarkMode}
+              className="w-9 h-9 rounded-full border border-slate-200 bg-white text-slate-600 hover:text-purple-700 hover:border-purple-300 transition flex items-center justify-center"
+              aria-label={isDarkMode ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
+              title={isDarkMode ? 'Mode terang' : 'Mode gelap'}
+            >
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={onOpenHistory}
+              className="relative flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-purple-700 transition"
+            >
+              <History className="w-3.5 h-3.5 text-purple-600" />
+              <span>History</span>
+              {historyCount > 0 && (
+                <span className="min-w-4 h-4 px-1 rounded-full bg-purple-600 text-white text-[9px] font-black flex items-center justify-center">
+                  {historyCount > 99 ? '99+' : historyCount}
+                </span>
+              )}
+            </button>
             <a 
               href="https://wa.me/6281234567890" 
               target="_blank" 
@@ -74,6 +108,15 @@ export default function Navbar({ onSelectCategory, onLogout }) {
 
           {/* Mobile Hamburger Button */}
           <div className="flex md:hidden items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleDarkMode}
+              className="w-9 h-9 rounded-full border border-slate-200 bg-white text-slate-600 hover:text-purple-700 transition flex items-center justify-center"
+              aria-label={isDarkMode ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
+              title={isDarkMode ? 'Mode terang' : 'Mode gelap'}
+            >
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -126,13 +169,31 @@ export default function Navbar({ onSelectCategory, onLogout }) {
               Lokasi Hub
             </a>
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-              <a
-                href="https://wa.me/6281234567890"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"
-              >
-                <Headphones className="w-3.5 h-3.5 text-purple-600" />
-                <span>Bantuan 24/7</span>
-              </a>
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://wa.me/6281234567890"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"
+                >
+                  <Headphones className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Bantuan</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenHistory();
+                  }}
+                  className="relative flex items-center gap-1.5 text-xs font-semibold text-slate-600"
+                >
+                  <History className="w-3.5 h-3.5 text-purple-600" />
+                  <span>History</span>
+                  {historyCount > 0 && (
+                    <span className="min-w-4 h-4 px-1 rounded-full bg-purple-600 text-white text-[9px] font-black flex items-center justify-center">
+                      {historyCount > 99 ? '99+' : historyCount}
+                    </span>
+                  )}
+                </button>
+              </div>
               <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 px-3 py-1.5 rounded-lg border border-slate-200">
                 <LogOut className="w-3.5 h-3.5" /> Keluar
               </button>
