@@ -1,12 +1,28 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, ShieldCheck, CheckCircle2, User, Phone } from 'lucide-react';
 
-export default function BookingModal({ vehicle, isOpen, onClose }) {
+export default function BookingModal({ vehicle, isOpen, onClose, onConfirm }) {
   const [days, setDays] = useState(2);
   const [withDriver, setWithDriver] = useState(vehicle?.type !== 'motor' && vehicle?.fuel === 'Termasuk Supir');
   const [userName, setUserName] = useState('');
   const [userPhone, setUserPhone] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen || !vehicle) return null;
 
@@ -19,14 +35,30 @@ export default function BookingModal({ vehicle, isOpen, onClose }) {
 
   const handleConfirm = (e) => {
     e.preventDefault();
+    onConfirm?.({
+      id: `${Date.now()}-${vehicle.id}`,
+      vehicleId: vehicle.id,
+      vehicleName: vehicle.name,
+      vehicleImage: vehicle.image,
+      vehicleType: vehicle.type,
+      customerName: userName.trim(),
+      customerPhone: userPhone.trim(),
+      days,
+      withDriver,
+      total: grandTotal,
+      status: 'Menunggu Konfirmasi',
+      createdAt: new Date().toISOString(),
+    });
     setIsSuccess(true);
-    setTimeout(() => {
-      // simulate completed reservation
-    }, 1500);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <div 
         className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-purple-100 relative max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
