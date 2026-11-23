@@ -1,0 +1,52 @@
+[
+  {
+    "id": "jakarta",
+    "code": "Jakarta",
+    "name": "Area pusat kota",
+    "status": "24 Jam Ready",
+    "city": "Jakarta",
+    "icon": "building",
+    "color": "teal",
+    "sort_order": 1
+  },
+  {
+    "id": "dps",
+    "code": "Bali",
+    "name": "Kuta dan Denpasar",
+    "status": "24 Jam Ready",
+    "city": "Bali",
+    "icon": "palmtree",
+    "color": "purple",
+    "sort_order": 2
+  },
+  {
+    "id": "sub",
+    "code": "Surabaya",
+    "name": "Area pusat kota",
+    "status": "06.00-23.00",
+    "city": "Surabaya",
+    "icon": "building",
+    "color": "blue",
+    "sort_order": 3
+  },
+  {
+    "id": "yia",
+    "code": "Yogyakarta",
+    "name": "Malioboro dan sekitarnya",
+    "status": "24 Jam Ready",
+    "city": "Yogyakarta",
+    "icon": "landmark",
+    "color": "indigo",
+    "sort_order": 4
+  },
+  {
+    "id": "bdo",
+    "code": "Bandung",
+    "name": "Area pusat kota",
+    "status": "24 Jam Ready",
+    "city": "Bandung",
+    "icon": "train",
+    "color": "purple",
+    "sort_order": 5
+  }
+]
