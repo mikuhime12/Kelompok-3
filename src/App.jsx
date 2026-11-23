@@ -11,6 +11,8 @@ import { VEHICLES } from './data/fleetData';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const authPath = window.location.pathname.replace(/\/$/, '');
+  const isAuthPage = authPath === '/login' || authPath === '/register';
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [rentalType, setRentalType] = useState('self'); // 'self' | 'driver'
@@ -88,8 +90,8 @@ export default function App() {
     }
   };
 
-  if (!isLoggedIn) {
-    return <LoginScreen onLogin={() => setIsLoggedIn(true)} />;
+  if (isAuthPage) {
+    return <LoginScreen initialRegister={authPath === '/register'} onLogin={() => { setIsLoggedIn(true); window.location.assign('/'); }} />;
   }
 
   return (
@@ -97,6 +99,7 @@ export default function App() {
       {/* Top Navigation */}
       <Navbar 
         onSelectCategory={handleSelectNavCategory}
+        isLoggedIn={isLoggedIn}
         onLogout={() => setIsLoggedIn(false)}
       />
 

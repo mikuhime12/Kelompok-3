@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Headphones, Menu, X, LogOut, CarFront } from 'lucide-react';
 
-export default function Navbar({ onSelectCategory, onLogout }) {
+export default function Navbar({ onSelectCategory, onLogout, isLoggedIn }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -67,13 +67,18 @@ export default function Navbar({ onSelectCategory, onLogout }) {
               <span>Bantuan</span>
             </a>
 
-            <button type="button" onClick={onLogout} className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-emerald-800 transition px-2 py-1.5">
-              <LogOut className="w-3.5 h-3.5" /> Keluar
-            </button>
+            {isLoggedIn ? (
+              <button type="button" onClick={onLogout} className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-emerald-800 transition px-2 py-1.5"><LogOut className="w-3.5 h-3.5" /> Keluar</button>
+            ) : (
+              <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
+                <a href="/login" className="text-xs font-bold text-slate-700 hover:text-emerald-800 transition">Sign in</a>
+                <a href="/register" className="rounded-lg bg-[#173c35] px-3 py-2 text-xs font-bold text-white hover:bg-[#20564b] transition">Daftar</a>
+              </div>
+            )}
           </div>
 
           {/* Mobile Hamburger Button */}
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex lg:hidden items-center gap-2">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -87,7 +92,7 @@ export default function Navbar({ onSelectCategory, onLogout }) {
 
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-purple-100/80 space-y-3 bg-white/95 backdrop-blur-lg rounded-b-2xl px-4 shadow-xl">
+          <div className="lg:hidden py-4 border-t border-purple-100/80 space-y-3 bg-white/95 backdrop-blur-lg rounded-b-2xl px-4 shadow-xl">
             <a
               href="#armada"
               onClick={() => {
@@ -133,9 +138,11 @@ export default function Navbar({ onSelectCategory, onLogout }) {
                 <Headphones className="w-3.5 h-3.5 text-purple-600" />
                 <span>Bantuan 24/7</span>
               </a>
-              <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 px-3 py-1.5 rounded-lg border border-slate-200">
-                <LogOut className="w-3.5 h-3.5" /> Keluar
-              </button>
+              {isLoggedIn ? (
+                <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 px-3 py-1.5 rounded-lg border border-slate-200"><LogOut className="w-3.5 h-3.5" /> Keluar</button>
+              ) : (
+                <div className="flex items-center gap-3"><a href="/login" className="text-xs font-bold text-slate-700">Sign in</a><a href="/register" className="rounded-lg bg-[#173c35] px-3 py-2 text-xs font-bold text-white">Daftar</a></div>
+              )}
             </div>
           </div>
         )}

@@ -81,6 +81,13 @@ export default function BookingModal({ vehicle, isOpen, onClose }) {
               <img
                 src={vehicle.image}
                 alt={vehicle.name}
+                onError={(e) => {
+                  if (e.currentTarget.dataset.fallbackApplied) return;
+                  e.currentTarget.dataset.fallbackApplied = 'true';
+                  e.currentTarget.src = vehicle.fallbackImage || (vehicle.type === 'motor'
+                    ? '/vehicles/motor-placeholder.svg'
+                    : '/vehicles/car-placeholder.svg');
+                }}
                 className="w-20 h-14 object-cover rounded-xl"
               />
               <div className="text-xs">

@@ -1,4 +1,4 @@
-export const VEHICLES = [
+const FEATURED_VEHICLES = [
   {
     id: 'toyota-avanza',
     name: 'Toyota Avanza 1.5 G CVT',
@@ -8,7 +8,7 @@ export const VEHICLES = [
     badge: 'MPV KELUARGA',
     badgeColor: 'emerald',
     description: 'MPV keluarga populer dengan kabin lega dan transmisi CVT',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/2022_Toyota_Avanza_%28PH%29.jpg/960px-2022_Toyota_Avanza_%28PH%29.jpg',
+    image: '/vehicles/car-placeholder.svg',
     seats: '7 Kursi',
     transmission: 'Matic CVT',
     fuel: 'Bensin',
@@ -26,7 +26,7 @@ export const VEHICLES = [
     badge: 'CITY CAR',
     badgeColor: 'blue',
     description: 'Hatchback ringkas dan irit untuk mobilitas di perkotaan',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/2023_Honda_Brio_Satya_1.2_E_in_Rallye_Red_%28Front%29.png/960px-2023_Honda_Brio_Satya_1.2_E_in_Rallye_Red_%28Front%29.png',
+    image: '/vehicles/car-placeholder.svg',
     seats: '5 Kursi',
     transmission: 'Matic CVT',
     fuel: 'Bensin',
@@ -44,7 +44,7 @@ export const VEHICLES = [
     badge: 'MPV KELUARGA',
     badgeColor: 'emerald',
     description: 'MPV nyaman dengan kabin luas untuk perjalanan keluarga',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/2021_Mitsubishi_Xpander_Ultimate_%28Indonesia%29_front_view.jpg/960px-2021_Mitsubishi_Xpander_Ultimate_%28Indonesia%29_front_view.jpg',
+    image: '/vehicles/car-placeholder.svg',
     seats: '7 Kursi',
     transmission: 'Matic',
     fuel: 'Bensin',
@@ -62,7 +62,7 @@ export const VEHICLES = [
     badge: 'HYBRID',
     badgeColor: 'emerald',
     description: 'MPV hybrid modern dengan kenyamanan untuk perjalanan jauh',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Toyota_%28Innova%29_Zenix_2.0_V_2023_%281%29.jpg/960px-Toyota_%28Innova%29_Zenix_2.0_V_2023_%281%29.jpg',
+    image: '/vehicles/car-placeholder.svg',
     seats: '7 Kursi',
     transmission: 'Matic CVT',
     fuel: 'Hybrid',
@@ -80,7 +80,7 @@ export const VEHICLES = [
     badge: 'SUV',
     badgeColor: 'amber',
     description: 'SUV keluarga dengan ground clearance tinggi dan 7 kursi',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/2024_Toyota_Rush_GR_Sport_%28Indonesia%29_front_view.jpg/960px-2024_Toyota_Rush_GR_Sport_%28Indonesia%29_front_view.jpg',
+    image: '/vehicles/car-placeholder.svg',
     seats: '7 Kursi',
     transmission: 'Matic',
     fuel: 'Bensin',
@@ -98,7 +98,7 @@ export const VEHICLES = [
     badge: 'IRIT BBM',
     badgeColor: 'blue',
     description: 'Skuter matik ringan dan irit untuk perjalanan harian',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/2019_Honda_BeAT_eSP_CBS_110_%2820200623%29.jpg/960px-2019_Honda_BeAT_eSP_CBS_110_%2820200623%29.jpg',
+    image: '/vehicles/motor-placeholder.svg',
     seats: '2 Orang',
     transmission: 'Matic 110cc',
     fuel: 'Bensin',
@@ -116,7 +116,7 @@ export const VEHICLES = [
     badge: 'MATIK 160CC',
     badgeColor: 'blue',
     description: 'Skuter matik 160cc dengan rem ABS dan bagasi lega',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/2022_Honda_Vario_160_ABS_%2820221105%29.jpg/960px-2022_Honda_Vario_160_ABS_%2820221105%29.jpg',
+    image: '/vehicles/motor-placeholder.svg',
     seats: '2 Orang',
     transmission: 'Matic 160cc',
     fuel: 'Bensin',
@@ -134,7 +134,7 @@ export const VEHICLES = [
     badge: 'PREMIUM',
     badgeColor: 'purple',
     description: 'Skuter premium nyaman dengan mesin 160cc dan ABS',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Honda_PCX_160_%285th_model%29_%28Indonesian_%26_East_Timorese_specific-market%29_in_Indonesia_%28February_2025%29_00.jpg/960px-Honda_PCX_160_%285th_model%29_%28Indonesian_%26_East_Timorese_specific-market%29_in_Indonesia_%28February_2025%29_00.jpg',
+    image: '/vehicles/motor-placeholder.svg',
     seats: '2 Orang',
     transmission: 'Matic 160cc',
     fuel: 'Bensin',
@@ -152,7 +152,7 @@ export const VEHICLES = [
     badge: 'MAXI YAMAHA',
     badgeColor: 'blue',
     description: 'Skuter maxi 155cc untuk berkendara nyaman di dalam dan luar kota',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/2025_Yamaha_NMAX_155_Standard.jpg/960px-2025_Yamaha_NMAX_155_Standard.jpg',
+    image: '/vehicles/motor-placeholder.svg',
     seats: '2 Orang',
     transmission: 'Matic 155cc',
     fuel: 'Bensin',
@@ -170,7 +170,7 @@ export const VEHICLES = [
     badge: 'SPORTY',
     badgeColor: 'amber',
     description: 'Skuter matik sporty 155cc dengan posisi berkendara dinamis',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/2021_Yamaha_Aerox_155_ABS.jpg/960px-2021_Yamaha_Aerox_155_ABS.jpg',
+    image: '/vehicles/motor-placeholder.svg',
     seats: '2 Orang',
     transmission: 'Matic 155cc',
     fuel: 'Bensin',
@@ -188,7 +188,7 @@ export const VEHICLES = [
     badge: 'MOBIL LISTRIK',
     badgeColor: 'purple',
     description: 'Mobil listrik kompak yang praktis untuk perjalanan dalam kota',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/2022_Wuling_Air_EV%2C_Central_Surabaya.jpg/960px-2022_Wuling_Air_EV%2C_Central_Surabaya.jpg',
+    image: '/vehicles/car-placeholder.svg',
     seats: '4 Kursi',
     transmission: 'Automatic',
     fuel: 'Full Listrik',
@@ -206,7 +206,7 @@ export const VEHICLES = [
     badge: 'MOBIL LISTRIK',
     badgeColor: 'purple',
     description: 'SUV listrik dengan kabin lega dan fitur berkendara modern',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/BYD_Atto_3_1X7A6494.jpg/960px-BYD_Atto_3_1X7A6494.jpg',
+    image: '/vehicles/car-placeholder.svg',
     seats: '5 Kursi',
     transmission: 'Automatic',
     fuel: 'Full Listrik',
@@ -224,7 +224,7 @@ export const VEHICLES = [
     badge: 'MOBIL LISTRIK',
     badgeColor: 'purple',
     description: 'Crossover listrik dengan desain futuristik dan kabin lapang',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Hyundai_Ioniq_5.jpg/960px-Hyundai_Ioniq_5.jpg',
+    image: '/vehicles/car-placeholder.svg',
     seats: '5 Kursi',
     transmission: 'Automatic',
     fuel: 'Full Listrik',
@@ -234,6 +234,115 @@ export const VEHICLES = [
     trips: 92,
   },
 ];
+
+const additionalCars = [
+  'Toyota Avanza Veloz', 'Toyota Calya', 'Toyota Agya', 'Toyota Yaris Cross Hybrid', 'Toyota Raize GR Sport',
+  'Toyota Fortuner VRZ', 'Toyota Innova Reborn', 'Toyota Alphard HEV', 'Toyota Corolla Cross Hybrid', 'Toyota Camry Hybrid',
+  'Honda Mobilio RS', 'Honda BR-V Prestige', 'Honda HR-V SE', 'Honda CR-V Turbo', 'Honda Civic RS',
+  'Honda City Hatchback RS', 'Honda WR-V RS', 'Mitsubishi Xpander Cross', 'Mitsubishi Pajero Sport Dakar', 'Mitsubishi Xforce Ultimate',
+  'Mitsubishi Mirage GLS', 'Suzuki Ertiga Hybrid', 'Suzuki XL7 Alpha', 'Suzuki XL7 Hybrid', 'Suzuki Baleno Hatchback',
+  'Suzuki Grand Vitara Hybrid',
+];
+
+const additionalMotors = [
+];
+
+const additional = [
+  ...additionalCars.map((name, index) => {
+    const electric = /EV|Electric|Hybrid/i.test(name);
+    const badge = electric ? (name.includes('Hybrid') ? 'HYBRID' : 'MOBIL LISTRIK') : ['MPV KELUARGA', 'CITY CAR', 'SUV', 'HATCHBACK'][index % 4];
+    return {
+      id: `rentgo-car-${String(index + 1).padStart(2, '0')}`,
+      name,
+      category: electric ? 'Mobil Listrik (EV)' : 'Mobil',
+      type: 'car',
+      year: String(2021 + (index % 5)),
+      badge,
+      badgeColor: electric ? 'purple' : ['emerald', 'blue', 'amber'][index % 3],
+      description: `${badge.toLowerCase()} nyaman untuk perjalanan dalam kota maupun luar kota.`,
+      // GAMBAR MOBIL BARU: simpan di public/vehicles/, lalu samakan nama file dengan path ini.
+      image: `/vehicles/car-${String(index + 1).padStart(2, '0')}.svg`,
+      seats: ['5 Kursi', '7 Kursi'][index % 2],
+      transmission: index % 4 === 0 ? 'Matic CVT' : 'Matic',
+      fuel: electric ? (name.includes('Hybrid') ? 'Hybrid' : 'Full Listrik') : 'Bensin',
+      price: electric ? 650000 + (index % 5) * 100000 : 300000 + (index % 6) * 75000,
+      priceUnit: '/ hari',
+      rating: Number((4.7 + (index % 4) * 0.1).toFixed(1)),
+      trips: 65 + index * 3,
+    };
+  }),
+  ...additionalMotors.map((name, index) => ({
+    id: `rentgo-motor-${String(index + 1).padStart(2, '0')}`,
+    name,
+    category: 'Sewa Motor',
+    type: 'motor',
+    year: String(2021 + (index % 5)),
+    badge: ['SKUTER MATIK', 'IRIT BBM', 'SPORTY', 'PREMIUM'][index % 4],
+    badgeColor: ['blue', 'emerald', 'amber', 'purple'][index % 4],
+    description: `Motor ${name} yang praktis dan nyaman untuk menemani perjalananmu.`,
+    // GAMBAR MOTOR BARU: simpan di public/vehicles/, lalu samakan nama file dengan path ini.
+    image: `/vehicles/motor-${String(index + 1).padStart(2, '0')}.svg`,
+    seats: '2 Orang',
+    transmission: /Matic|Scoopy|BeAT|PCX|ADV|Vario|Vespa|NMAX|Aerox|XMAX|Filano|Fazzio|Lexi|Address|Burgman|Binguo|Yadea|Alva|Fox/i.test(name) ? 'Matic' : 'Manual',
+    fuel: /Electric|EV|Alva|Fox-R/i.test(name) ? 'Listrik' : 'Bensin',
+    price: 80000 + (index % 6) * 15000,
+    priceUnit: '/ hari',
+    rating: Number((4.7 + (index % 4) * 0.1).toFixed(1)),
+    trips: 90 + index * 4,
+  })),
+];
+
+export const VEHICLE_IMAGE_URLS = {
+  'Toyota Avanza 1.5 G CVT': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/2022_Toyota_Avanza_%28PH%29.jpg/960px-2022_Toyota_Avanza_%28PH%29.jpg',
+  'Honda Brio Satya E': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/2023_Honda_Brio_Satya_1.2_E_in_Rallye_Red_%28Front%29.png/960px-2023_Honda_Brio_Satya_1.2_E_in_Rallye_Red_%28Front%29.png',
+  'Mitsubishi Xpander Ultimate': 'https://www.sardanagroup.co.id/HP/production/images/news/Promo%20Mitsubishi%20Xpander%20Medan%202025.jpeg_1753691455.jpeg',
+  'Toyota Innova Zenix 2.0 V Hybrid': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRpw4v6dL08ViRcOlHufjCqQt18UhYrlwRTuH5E_gLFg&s=10',
+  'Toyota Rush GR Sport': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-NSFUSOWCvqT72Nsr31AgFvCI8960gDibwJ25rrC-7w&s=10',
+  'Honda BeAT CBS': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTky-ep6OeWoqhhhGFIdh1dbbeGUj0fTTlMC-1nn9GK_Q&s=10',
+  'Honda Vario 160 ABS': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCtUPprrnkoQDVpT7LdJp9A0NuvATdEFQDv1opygQO0A&s=10',
+  'Honda PCX 160 ABS': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSo-K8Vb14J83zAhlY8GKu9p_dpZU1YA7d0PEatqyhzQ&s=10',
+  'Yamaha NMAX 155': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRm1xiFIX3sDNq3-yjhhh9okx9UHp4wJbhXmUiIHBG-PQ&s',
+  'Yamaha Aerox 155 ABS': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWKGxevIbuPtjrTh-Ys3nJIbWWTjdrZ5miEGq34e6XCg&s=10',
+  'Wuling Air ev Long Range': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRisRkkjbOXN3aTRkJII6AbwozisGEfx9uon_tQXuSn5g&s=10',
+  'BYD Atto 3 Superior': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqY-Q4qzfWf44FHafIpfA5Dh2YIyfVJH4JdeXSc-2B3Q&s=10',
+  'Hyundai IONIQ 5 Long Range': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIDenAxqp2mKRZtmpMlIBBFaqiyi0esPXwziKlFN0_2w&s=10',
+  'Toyota Avanza Veloz': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbdCeJ02ZyjSs9JYxuP4g4bBmnU2a5CC4kalQ-WHM9fQ&s=10',
+  'Toyota Calya': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoP2qVpQtyKljmzs1PkmuSNWSBUrFtOX5zJ7mcNtYovg&s=10',
+  'Toyota Agya': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJR7-jkaph2KlCVzfVug71XKPIARBBJ6jGdOTMfhBIUg&s',
+  'Toyota Yaris Cross Hybrid': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRw4FHFaXOB_ZmE9vkz1vwuUiVn0VTNcJ7l5Gh6G473Hw&s=10',
+  'Toyota Raize GR Sport': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSL9GOQSBPewVqsCRClY-G6uKNCiSgTrZ3mucEl-uiOWw&s=10',
+  'Toyota Fortuner VRZ': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKvBS8Oo-eqy4E6_KhO2bGgDz_KBecWhvR_UtuIV-0xQ&s=10',
+  'Toyota Innova Reborn': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREfyT_YCVAOY8TBPfGMMu-hV9Hf6_lK-Uhw3ybvJMjIg&s=10',
+  'Toyota Alphard HEV': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8FsN65oSbHrP1x6mctLgNMIcH6IuzQ-Caoru5ExgYRQ&s=10',
+  'Toyota Corolla Cross Hybrid': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRhgW5wvjIxvn5xk2ESWJdcFXs0racCXk3NqGvuP2lTA&s=10',
+  'Toyota Camry Hybrid': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQo-029fFkI5ulMPyagyUcvh2Ur6AcfCdjUqN3YoYexug&s=10',
+  'Honda Mobilio RS': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQL52qi8sQsMQBjNpocl6sl2adMT5GFMXAOLTEMLMmMkw&s=10',
+  'Honda BR-V Prestige': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5-4X4HsBTA7i0DKAYwi0q2N6gCg84c3ih1GuK1n8Hzg&s=10',
+  'Honda HR-V SE': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgc-MBUOyyWvdCHbTnTtthhMSDvPAhg6hLMHRQpP3HX4gmZqNPEQRzT_hE&s=10',
+  'Honda CR-V Turbo': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLi6X_0a0gs51h1pAaLw9wu_VKrf8yEe5iDdu6AsQ5yQ&s=10',
+  'Honda Civic RS': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkl9Ttn9KVjpIYDqivonChvj1R14K3tuER8TiB184T4A&s=10',
+  'Honda City Hatchback RS': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgwur3jadp-jwAjux9wh12aTlrhOWo4v_U8_OleUhPog&s=10',
+  'Honda WR-V RS': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSo21bDXqjE6bGxSGRwtAclAmBNsqk0UavakDg6HhBbXw&s=10',
+  'Mitsubishi Xpander Cross':'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNtio5qySYEsJ9hOoKlw8iwiMTOA9k0DBnWunYnEmnCA&s=10',
+  'Mitsubishi Pajero Sport Dakar' : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQ7tn0y3MBDXB2HklzctQLXSs1ALuSw70FthXNOYN8FQ&s=10',
+  'Mitsubishi Xforce Ultimate' : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgctsTb7zqRG6RIdj44JiFYwCEhhW9WfFzABbWOx_SAw&s=10',
+  'Mitsubishi Mirage GLS' : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHEd4SSYx4BIOdpDBlxvPJ61WBWfbsQV4BOoPx7c9Cnw&s=10',
+  'Suzuki Ertiga Hybrid' : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTIFivho_PVkof8wGFvuJA1CSQSE2YdQFVad_4ZoQtkYA&s=10',
+  'Suzuki XL7 Alpha' : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAO-SiDsa935q1E6c2_bakdrbjO6PexvqieP8HgWvEjQ&s=10',
+  'Suzuki XL7 Hybrid' : 'https://res.cloudinary.com/mufautoshow/image/upload/f_auto,f_auto/w_1200/v1692253473/moas/news/1692253465_suzuki-new-xl7-hybrid-suv-yang-irit-gagah-dan-nyaman.png',
+  'Suzuki Baleno Hatchback' : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhBRc0JtolYz9F0q3Y5yT7lcD5KL2ldXlPekoH3ANUPw&s=10',
+  'Suzuki Grand Vitara Hybrid':'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr9FR6fBqSDFvNrU3N0JABtA1ExyrvovWCwTSWzkaLvg&s=10',
+};
+
+export const VEHICLES = [...FEATURED_VEHICLES, ...additional].map((vehicle) => {
+  const fallbackImage = vehicle.image || `/vehicles/${vehicle.type === 'motor' ? 'motor' : 'car'}-placeholder.svg`;
+
+  return {
+    ...vehicle,
+    image: VEHICLE_IMAGE_URLS[vehicle.name]?.trim() || fallbackImage,
+    fallbackImage,
+  };
+});
 
 export const CATEGORIES = [
   'Semua',

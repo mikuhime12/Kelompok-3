@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ArrowRight, CarFront, KeyRound, Mail } from 'lucide-react';
 
-export default function LoginScreen({ onLogin }) {
-  const [isRegistering, setIsRegistering] = useState(false);
+export default function LoginScreen({ onLogin, initialRegister = false }) {
+  const [isRegistering, setIsRegistering] = useState(initialRegister);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,8 +42,7 @@ const handleSubmit = async (event) => {
 
     if (isRegistering) {
       setFeedback("Registrasi berhasil. Silakan login.");
-      setIsRegistering(false);
-      setPassword("");
+      window.location.assign('/login');
     } else {
       setFeedback("Login berhasil.");
       onLogin(data.user);
@@ -71,7 +70,7 @@ const handleSubmit = async (event) => {
             <div className="w-11 h-11 rounded-2xl bg-[#d5f36a] text-[#173c35] flex items-center justify-center">
               <CarFront className="w-6 h-6" />
             </div>
-            <span className="text-2xl font-black">Rent-Go</span>
+            <a href="/" className="text-2xl font-black">Rent-Go</a>
           </div>
           <div className="relative max-w-md py-10 lg:py-0">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d5f36a] mb-4">Rental mobil & motor</p>
@@ -152,7 +151,7 @@ const handleSubmit = async (event) => {
             {isRegistering ? 'Sudah punya akun?' : 'Belum punya akun?'}{' '}
             <button
               type="button"
-              onClick={() => setIsRegistering(!isRegistering)}
+              onClick={() => window.location.assign(isRegistering ? '/login' : '/register')}
               className="font-bold text-emerald-800 hover:text-emerald-950"
             >
               {isRegistering ? 'Masuk' : 'Daftar'}

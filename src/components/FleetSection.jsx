@@ -95,9 +95,13 @@ export default function FleetSection({
                     src={car.image}
                     alt={car.name}
                     onError={(e) => {
-                      if (car.fallbackImage && e.target.src !== car.fallbackImage) {
-                        e.target.src = car.fallbackImage;
-                      }
+                      if (e.currentTarget.dataset.fallbackApplied) return;
+                      e.currentTarget.dataset.fallbackApplied = 'true';
+                      e.currentTarget.src = car.fallbackImage || (
+                        car.type === 'motor'
+                          ? '/vehicles/motor-placeholder.svg'
+                          : '/vehicles/car-placeholder.svg'
+                      );
                     }}
                     className={`w-full h-full ${
                       car.id === 'honda-pcx-160' ? 'object-contain p-2' : 'object-cover object-center'
