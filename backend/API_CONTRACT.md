@@ -772,12 +772,22 @@ Semua aksi admin harus mencatat actor, waktu, dan perubahan status untuk audit (
 | `POST /api/auth/password` (ganti password) | Rancangan |
 | `POST /api/auth/password/reset` | Rancangan |
 | `POST /api/auth/password/reset/confirm` | Rancangan |
-| `GET /api/locations` | Rancangan |
-| `GET /api/vehicles` | Rancangan |
-| `GET /api/vehicles/{id}` | Rancangan |
-| `GET /api/vehicles/{id}/availability` | Rancangan |
-| `POST /api/bookings/quote` | Rancangan |
-| `POST /api/bookings` | Rancangan |
-| `GET /api/bookings/{id}` | Rancangan |
-| `POST /api/bookings/{id}/cancel` | Rancangan |
+| `GET /api/locations` | Terimplementasi |
+| `GET /api/vehicles` | Terimplementasi |
+| `GET /api/vehicles/{id}` | Terimplementasi |
+| `GET /api/vehicles/{id}/availability` | Terimplementasi |
+| `POST /api/bookings/quote` | Terimplementasi |
+| `POST /api/bookings` | Terimplementasi |
+| `GET /api/bookings/{id}` | Terimplementasi |
+| `POST /api/bookings/{id}/cancel` | Terimplementasi |
 | `/api/admin/*` | Rancangan |
+
+## Catatan implementasi booking
+
+- `POST /api/bookings` mengembalikan field tambahan `accessToken` (hanya pada respons pembuatan). Simpan bersama `id`; `GET /api/bookings/{id}` dan `POST /api/bookings/{id}/cancel` memerlukan token itu lewat header `X-Booking-Token` (atau query `?token=`). Token salah atau booking tidak ada -> `404`.
+- `Idempotency-Key` opsional. Key yang sama dengan payload sama mengembalikan booking awal; payload berbeda -> `409 IDEMPOTENCY_KEY_REUSED`.
+- Tanggal tanpa offset (mis. dari `datetime-local`) dianggap WIB (`+07:00`). Respons selalu memakai `+07:00`.
+- Nomor telepon dinormalisasi ke E.164 (`0812...` -> `+62812...`).
+- Ketersediaan: jumlah lock aktif yang tumpang tindih harus < `vehicle_locations.stock`; dicek di dalam transaksi dengan `FOR UPDATE`. Constraint eksklusi GiST tidak dipakai karena bertentangan dengan `stock > 1`.
+- Kode error: `VALIDATION_ERROR` (422), `VEHICLE_NOT_FOUND`/`LOCATION_NOT_FOUND`/`BOOKING_NOT_FOUND` (404), `VEHICLE_UNAVAILABLE`, `BOOKING_NOT_CANCELLABLE`, `CANCELLATION_WINDOW_PASSED`, `IDEMPOTENCY_KEY_REUSED` (409).
+- JWT dan endpoint `/api/admin/*` belum dikerjakan.

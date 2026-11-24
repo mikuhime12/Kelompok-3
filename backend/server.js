@@ -3,6 +3,10 @@ import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import pool from "./db.js";
+import locationsRouter from "./routes/locations.js";
+import vehiclesRouter from "./routes/vehicles.js";
+import bookingsRouter from "./routes/bookings.js";
+import { apiNotFound, errorHandler } from "./lib/http.js";
 
 const app = express();
 
@@ -168,6 +172,16 @@ app.post("/api/login", async (req, res) => {
     });
   }
 });
+
+// ==========================
+// LOKASI, ARMADA, PEMESANAN
+// ==========================
+app.use("/api/locations", locationsRouter);
+app.use("/api/vehicles", vehiclesRouter);
+app.use("/api/bookings", bookingsRouter);
+
+app.use("/api", apiNotFound);
+app.use(errorHandler);
 
 const PORT = Number(process.env.PORT || 3000);
 
