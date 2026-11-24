@@ -12,6 +12,7 @@ import { VEHICLES } from './data/fleetData';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authMode, setAuthMode] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('rent-go-theme');
     if (savedTheme) return savedTheme === 'dark';
@@ -121,16 +122,6 @@ export default function App() {
     }
   };
 
-  if (!isLoggedIn) {
-    return (
-      <LoginScreen
-        onLogin={() => setIsLoggedIn(true)}
-        isDarkMode={isDarkMode}
-        onToggleDarkMode={toggleDarkMode}
-      />
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#faf9fe] text-slate-800 font-sans selection:bg-purple-100 selection:text-purple-900 flex flex-col">
       {/* Top Navigation */}
@@ -138,6 +129,8 @@ export default function App() {
         onSelectCategory={handleSelectNavCategory}
         onLogout={() => setIsLoggedIn(false)}
         onOpenHistory={() => setIsHistoryOpen(true)}
+        onOpenAuth={setAuthMode}
+        isLoggedIn={isLoggedIn}
         historyCount={bookingHistory.length}
         isDarkMode={isDarkMode}
         onToggleDarkMode={toggleDarkMode}
@@ -209,6 +202,20 @@ export default function App() {
         onClose={() => setIsHistoryOpen(false)}
         history={bookingHistory}
       />
+
+      {authMode && (
+        <LoginScreen
+          key={authMode}
+          initialMode={authMode}
+          onLogin={() => {
+            setIsLoggedIn(true);
+            setAuthMode(null);
+          }}
+          onClose={() => setAuthMode(null)}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={toggleDarkMode}
+        />
+      )}
 
     </div>
   );
