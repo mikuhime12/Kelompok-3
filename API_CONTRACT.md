@@ -12,7 +12,7 @@ Setiap endpoint ditandai **TERIMPLEMENTASI** (sudah dipanggil frontend) atau **R
 2. [Bentuk respons yang diharapkan](#bentuk-respons-yang-diharapkan)
 3. [Model data](#model-data)
 4. [Autentikasi (TERIMPLEMENTASI)](#autentikasi-terimplementasi)
-5. [Lokasi hub (RANCANGAN)](#lokasi-hub-rancangan)
+5. [Lokasi hub (TERIMPLEMENTASI)](#lokasi-hub-terimplementasi)
 6. [Armada kendaraan (RANCANGAN)](#armada-kendaraan-rancangan)
 7. [Pemesanan (RANCANGAN)](#pemesanan-rancangan)
 8. [Pemetaan UI ke API](#pemetaan-ui-ke-api)
@@ -20,8 +20,8 @@ Setiap endpoint ditandai **TERIMPLEMENTASI** (sudah dipanggil frontend) atau **R
 
 ## Konfigurasi koneksi
 
-- Base URL backend: saat ini **di-hardcode** `http://localhost:3000` di `src/components/LoginScreen.jsx`.
-- Pindahkan ke variabel environment: buat `.env` dengan `VITE_API_URL=http://localhost:3000`, lalu pakai `import.meta.env.VITE_API_URL` di seluruh kode.
+- Base URL backend dibaca dari `VITE_API_URL` di `src/lib/api.js`; jika tidak diatur, nilainya `http://localhost:3000`.
+- Salin `.env.example` menjadi `.env` dan isi `VITE_API_URL` dengan alamat backend yang dipakai.
 - CORS backend mengizinkan origin frontend (default `http://localhost:5173`, dev server Vite). Untuk menghindari masalah CORS, alternatifnya tambahkan proxy di `vite.config.js` agar request `/api/*` diteruskan ke `http://localhost:3000`.
 - Format: `application/json; charset=utf-8`. Selalu kirim header `Content-Type: application/json` pada `POST`/`PATCH`.
 
@@ -185,7 +185,7 @@ Error yang mungkin:
 
 Implementasi saat ini: saat sukses panggil `onLogin(data.user)` untuk set `isLoggedIn = true` di `App.jsx`.
 
-## Lokasi hub (RANCANGAN)
+## Lokasi hub (TERIMPLEMENTASI)
 
 ### `GET /api/locations`
 
@@ -206,6 +206,10 @@ Respons `200`:
 ```
 
 Pemakaian: `data[i]` langsung menggantikan objek hub di `HUBS`. Field `icon`/`color` dipakai untuk styling; `id` dipakai sebagai `cityId` untuk query armada/pemesanan.
+
+### `GET /api/locations/{locationId}/map`
+
+Dipanggil tombol **Lihat peta** di `LocationsSection.jsx`. Backend mengirim koordinat hub; frontend menampilkan peta Leaflet dengan tile OpenStreetMap. Contoh: `GET /api/locations/jakarta/map`. Koordinat adalah pusat kota, bukan alamat cabang atau titik serah-terima yang presisi. Tidak memerlukan API key Google.
 
 ## Armada kendaraan (RANCANGAN)
 
@@ -315,7 +319,8 @@ Request opsional `{ "reason": "Perubahan jadwal" }`. `200`: booking terbaru. `40
 | Elemen UI | File | API | Status |
 |---|---|---|---|
 | Form login/daftar | `src/components/LoginScreen.jsx` | `POST /api/login`, `POST /api/register` | Terimplementasi |
-| Hub lokasi | `src/components/LocationsSection.jsx` → `src/data/hubsData.js` | `GET /api/locations` | Rancangan |
+| Hub lokasi | `src/components/LocationsSection.jsx` | `GET /api/locations` | Terimplementasi, data statis sebagai fallback |
+| Peta hub | `src/components/LocationsSection.jsx` | `GET /api/locations/{locationId}/map` | Terimplementasi |
 | Pencarian/kategori armada | `src/App.jsx`, `src/components/FleetSection.jsx` → `src/data/fleetData.js` | `GET /api/vehicles` | Rancangan |
 | Pilih kendaraan | `src/components/FleetSection.jsx` | `GET /api/vehicles/{vehicleId}` | Rancangan |
 | Widget pencarian (kota, tanggal, tipe, mode sewa) | `src/components/BookingWidget.jsx` | `GET /api/vehicles` dengan query | Rancangan |
@@ -331,21 +336,14 @@ Pertahankan nama field persis seperti di `src/data/fleetData.js` dan `src/data/h
 
 Langkah konkret per file:
 
-1. `src/components/LoginScreen.jsx`
-   - Ganti `http://localhost:3000` dengan `import.meta.env.VITE_API_URL`.
-   - (Opsional) tangani kedua bentuk respons saat format disamukan backend.
-
-2. `src/data/hubsData.js`
-   - Gantikan `export const HUBS` dengan fetch ke `GET /api/locations`; simpan hasil ke state. Bisa jadikan data statis sebagai fallback bila API gagal.
-
-3. `src/data/fleetData.js`
+1. `src/data/fleetData.js`
    - Gantikan `export const VEHICLES` dengan fetch ke `GET /api/vehicles` (dengan query filter). Hapus filter manual `useMemo` di `App.jsx` karena server sudah memfilter; gunakan `meta` untuk paginasi.
 
-4. `src/components/BookingWidget.jsx`
+2. `src/components/BookingWidget.jsx`
    - Ubah input tanggal teks (`pickupDate`/`returnDate`) menjadi `<input type="datetime-local">` dan kirim ISO 8601 ke `pickupAt`/`returnAt`.
    - Petakan nama kota (`location`) ke slug hub (`cityId`) — mis. `Jakarta` → `jakarta`, `Bali` → `dps`.
 
-5. `src/components/BookingModal.jsx`
+3. `src/components/BookingModal.jsx`
    - Ganti `setIsSuccess(true)` dengan `POST /api/bookings/quote` → tampilkan `priceBreakdown`, lalu `POST /api/bookings` saat konfirmasi.
    - Tampilkan `data.status` dari server; simpan `data.id` (dan token bila ada) untuk cek status.
    - Hapus perhitungan harga lokal; andalkan harga server (tetap boleh tampilkan estimasi dari quote).

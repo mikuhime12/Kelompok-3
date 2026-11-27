@@ -1,23 +1,75 @@
-
 import express from "express";
 import cors from "cors";
-import bcrypt from "bcrypt";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import pool from "./db.js";
+import authRouter from "./routes/auth.js";
+import adminRouter from "./routes/admin.js";
 import locationsRouter from "./routes/locations.js";
 import vehiclesRouter from "./routes/vehicles.js";
 import bookingsRouter from "./routes/bookings.js";
 import { apiNotFound, errorHandler } from "./lib/http.js";
 
 const app = express();
+const isProduction = process.env.NODE_ENV === "production";
+const sessionSecret = process.env.SESSION_SECRET;
+if (isProduction && !sessionSecret) {
+  throw new Error("SESSION_SECRET wajib diatur pada environment production.");
+}
+
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 app.use(cors({
-  origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("Origin tidak diizinkan oleh CORS."));
+  },
+  credentials: true,
 }));
+
+// Reject browser form/fetch requests from unconfigured origins (CSRF defense).
+app.use((req, res, next) => {
+  const isReadOnly = ["GET", "HEAD", "OPTIONS"].includes(req.method);
+  const origin = req.get("origin");
+  if (!isReadOnly && origin && !allowedOrigins.includes(origin)) {
+    return res.status(403).json({
+      error: { code: "ORIGIN_NOT_ALLOWED", message: "Origin permintaan tidak diizinkan." },
+    });
+  }
+  return next();
+});
 
 app.use(express.json());
 
+if (isProduction) app.set("trust proxy", 1);
+const PgSessionStore = connectPgSimple(session);
+app.use(session({
+  name: "rentgo.sid",
+  secret: sessionSecret || "rent-go-development-only-change-this-secret",
+  store: new PgSessionStore({
+    pool,
+    tableName: "user_sessions",
+    createTableIfMissing: false,
+    pruneSessionInterval: 15 * 60,
+  }),
+  resave: false,
+  saveUninitialized: false,
+  rolling: true,
+  proxy: isProduction,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.SESSION_COOKIE_SECURE === "true" || isProduction,
+    sameSite: process.env.SESSION_SAME_SITE || "lax",
+    path: "/",
+    maxAge: 8 * 60 * 60 * 1000,
+  },
+}));
+
 // Tes server dan koneksi database
-app.get("/", async (req, res) => {
+app.get("/", async (_req, res) => {
   try {
     await pool.query("SELECT 1");
     res.send("Backend Rent-Go aktif dan PostgreSQL terhubung!");
@@ -27,155 +79,8 @@ app.get("/", async (req, res) => {
   }
 });
 
-// ==========================
-// REGISTRASI
-// POST /api/register
-// ==========================
-app.post("/api/register", async (req, res) => {
-  try {
-    const { nama, email, password } = req.body ?? {};
-
-    if (
-      typeof nama !== "string" ||
-      typeof email !== "string" ||
-      typeof password !== "string" ||
-      !nama.trim() ||
-      !email.trim() ||
-      !password
-    ) {
-      return res.status(400).json({
-        message: "Nama, email, dan password wajib diisi.",
-      });
-    }
-
-    const namaBersih = nama.trim();
-    const emailBersih = email.trim().toLowerCase();
-
-    if (namaBersih.length > 100 || emailBersih.length > 100) {
-      return res.status(400).json({
-        message: "Nama dan email maksimal 100 karakter.",
-      });
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailBersih)) {
-      return res.status(400).json({
-        message: "Format email tidak valid.",
-      });
-    }
-
-    // Batas input bcrypt: 72 byte
-    if (Buffer.byteLength(password, "utf8") > 72) {
-      return res.status(400).json({
-        message: "Password terlalu panjang.",
-      });
-    }
-
-    // Periksa email yang sudah terdaftar
-    const cek = await pool.query(
-      'SELECT id FROM "daftar_akun" WHERE LOWER(email) = $1',
-      [emailBersih]
-    );
-
-    if (cek.rowCount > 0) {
-      return res.status(409).json({
-        message: "Email sudah terdaftar.",
-      });
-    }
-
-    // Hash password sebelum disimpan
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    // Masukkan akun ke tabel yang sudah ada
-    const hasil = await pool.query(
-      `INSERT INTO "daftar_akun" (nama, email, pw)
-       VALUES ($1, $2, $3)
-       RETURNING id, nama, email`,
-      [namaBersih, emailBersih, passwordHash]
-    );
-
-    return res.status(201).json({
-      message: "Registrasi berhasil. Silakan login.",
-      user: hasil.rows[0],
-    });
-  } catch (error) {
-    console.error("Registrasi error:", error.message);
-
-    if (error.code === "23505") {
-      return res.status(409).json({
-        message: "Email sudah terdaftar.",
-      });
-    }
-
-    return res.status(500).json({
-      message: "Terjadi kesalahan pada server.",
-    });
-  }
-});
-
-// ==========================
-// LOGIN
-// POST /api/login
-// ==========================
-app.post("/api/login", async (req, res) => {
-  try {
-    const { email, password } = req.body ?? {};
-
-    if (
-      typeof email !== "string" ||
-      typeof password !== "string" ||
-      !email.trim() ||
-      !password
-    ) {
-      return res.status(400).json({
-        message: "Email dan password wajib diisi.",
-      });
-    }
-
-    const emailBersih = email.trim().toLowerCase();
-
-    const hasil = await pool.query(
-      `SELECT id, nama, email, pw
-       FROM "daftar_akun"
-       WHERE LOWER(email) = $1`,
-      [emailBersih]
-    );
-
-    if (hasil.rowCount === 0) {
-      return res.status(404).json({
-        message: "Akun belum terdaftar.",
-      });
-    }
-
-    const akun = hasil.rows[0];
-
-    const cocok = await bcrypt.compare(password, akun.pw);
-
-    if (!cocok) {
-      return res.status(401).json({
-        message: "Email atau password salah.",
-      });
-    }
-
-    return res.status(200).json({
-      message: "Login berhasil.",
-      user: {
-        id: akun.id,
-        nama: akun.nama,
-        email: akun.email,
-      },
-    });
-  } catch (error) {
-    console.error("Login error:", error.message);
-
-    return res.status(500).json({
-      message: "Terjadi kesalahan pada server.",
-    });
-  }
-});
-
-// ==========================
-// LOKASI, ARMADA, PEMESANAN
-// ==========================
+app.use("/api", authRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/locations", locationsRouter);
 app.use("/api/vehicles", vehiclesRouter);
 app.use("/api/bookings", bookingsRouter);

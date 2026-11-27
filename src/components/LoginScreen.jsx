@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ArrowRight, CarFront, KeyRound, Mail, Moon, Sun, X } from 'lucide-react';
+import { apiFetch } from '../lib/api';
 
 export default function LoginScreen({ onLogin, onClose, initialMode = 'login', isDarkMode, onToggleDarkMode }) {
   const [isRegistering, setIsRegistering] = useState(initialMode === 'register');
@@ -22,8 +23,8 @@ const handleSubmit = async (event) => {
     : { email, password };
 
   try {
-    const response = await fetch(
-      `http://localhost:3000${endpoint}`,
+    const response = await apiFetch(
+      endpoint,
       {
         method: "POST",
         headers: {

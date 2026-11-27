@@ -9,9 +9,11 @@ import Footer from './components/Footer';
 import BookingModal from './components/BookingModal';
 import HistoryModal from './components/HistoryModal';
 import { VEHICLES } from './data/fleetData';
+import { apiFetch } from './lib/api';
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const isLoggedIn = Boolean(user);
   const [authMode, setAuthMode] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('rent-go-theme');
@@ -53,6 +55,31 @@ export default function App() {
   }, [isDarkMode]);
 
   const toggleDarkMode = () => setIsDarkMode((currentMode) => !currentMode);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch('/api/me')
+      .then(async (response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!cancelled) setUser(data?.user ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setUser(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await apiFetch('/api/logout', { method: 'POST' });
+    } catch {
+      // Clear the local UI even if the API is temporarily unreachable.
+    }
+    setUser(null);
+    setIsHistoryOpen(false);
+  };
 
   // Filter vehicles based on active category, vehicle type tab, and search query
   const filteredVehicles = useMemo(() => {
@@ -127,7 +154,7 @@ export default function App() {
       {/* Top Navigation */}
       <Navbar 
         onSelectCategory={handleSelectNavCategory}
-        onLogout={() => setIsLoggedIn(false)}
+        onLogout={handleLogout}
         onOpenHistory={() => setIsHistoryOpen(true)}
         onOpenAuth={setAuthMode}
         isLoggedIn={isLoggedIn}
@@ -207,8 +234,8 @@ export default function App() {
         <LoginScreen
           key={authMode}
           initialMode={authMode}
-          onLogin={() => {
-            setIsLoggedIn(true);
+          onLogin={(authenticatedUser) => {
+            setUser(authenticatedUser);
             setAuthMode(null);
           }}
           onClose={() => setAuthMode(null)}

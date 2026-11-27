@@ -107,6 +107,9 @@ Hub kota untuk pemilih lokasi. Kolom mengikuti [model Hub](#hub-lokasi). `id` ad
 | `city` | varchar(60) | Nama kota, wajib |
 | `icon` | varchar(20) | `building`, `palmtree`, `landmark`, `train` |
 | `color` | varchar(20) | `teal`, `purple`, `blue`, `indigo` |
+| `latitude` | double precision | Lintang pusat perkiraan hub; dipakai Leaflet |
+| `longitude` | double precision | Bujur pusat perkiraan hub; dipakai Leaflet |
+| `sort_order` | integer | Urutan lokasi pada UI |
 | `active` | boolean | Default `true` |
 | `created_at` | timestamptz | Default `now()` |
 
@@ -401,7 +404,7 @@ Aturan tarif supir (sesuai logika `../src/components/BookingModal.jsx`):
 
 ## Autentikasi (TERIMPLEMENTASI)
 
-Endpoint ini sudah ada di `backend/server.js`. Belum ada token/sesi — login hanya mengembalikan data user; frontend menyimpan state `isLoggedIn` di memori. Rancangan token JWT dan kebijakan hashing ada di [Autentikasi JWT dan hashing password](#autentikasi-jwt-dan-hashing-password-rancangan).
+Endpoint sesi ada di `backend/routes/auth.js` dan dipasang dari `backend/server.js`. Login membuat sesi server-side di PostgreSQL; browser hanya menerima cookie `HttpOnly`. JWT pada bagian berikut tetap rancangan dan tidak dipakai oleh implementasi ini.
 
 ### `POST /api/register`
 
@@ -424,7 +427,7 @@ Respons `201`:
 ```json
 {
   "message": "Registrasi berhasil. Silakan login.",
-  "user": { "id": 1, "nama": "Alexander Pratama", "email": "alex@example.com" }
+  "user": { "id": 1, "nama": "Alexander Pratama", "email": "alex@example.com", "role": "client" }
 }
 ```
 
@@ -446,20 +449,33 @@ Request:
 Validasi server:
 - `email` dan `password` wajib diisi. Email dinormalisasi ke huruf kecil.
 
-Respons `200`:
+Respons `200` dan cookie sesi `rentgo.sid`:
 
 ```json
 {
   "message": "Login berhasil.",
-  "user": { "id": 1, "nama": "Alexander Pratama", "email": "alex@example.com" }
+  "user": { "id": 1, "nama": "Alexander Pratama", "email": "alex@example.com", "role": "client" }
 }
 ```
 
 Error:
 - `400` — field kosong: `{ "message": "Email dan password wajib diisi." }`
-- `404` — akun belum terdaftar: `{ "message": "Akun belum terdaftar." }`
-- `401` — password salah: `{ "message": "Email atau password salah." }`
+- `401` — email/password salah: `{ "message": "Email atau password salah." }`
 - `500` — kesalahan server: `{ "message": "Terjadi kesalahan pada server." }`
+
+### `GET /api/me`, `POST /api/logout`
+
+`GET /api/me` memvalidasi sesi dan mengembalikan `{ "user": { "id", "nama", "email", "role" } }`. Tanpa sesi yang valid, respons `401`. `POST /api/logout` menghancurkan sesi di server dan menghapus cookie; respons `204`.
+
+Semua endpoint berbasis sesi harus dipanggil browser dengan `credentials: "include"`. Atur `SESSION_SECRET`, `FRONTEND_ORIGIN`, `SESSION_SAME_SITE`, dan `SESSION_COOKIE_SECURE` pada environment backend.
+
+Untuk menyiapkan admin pertama setelah migrasi, daftarkan akun melalui form biasa lalu ubah role akun tersebut langsung di database:
+
+```sql
+UPDATE "daftar_akun" SET role = 'admin' WHERE LOWER(email) = LOWER('admin@example.com');
+```
+
+Pendaftaran publik tidak menerima nilai role dari klien.
 
 ### `GET /` (health check)
 
@@ -599,7 +615,7 @@ Respons `401` standar (endpoint privat memakai pembungkus [Bentuk respons](#bent
 
 Kode error autentikasi: `invalid_token`, `expired_token`, `invalid_refresh_token`, `expired_refresh_token`.
 
-## Lokasi hub (RANCANGAN)
+## Lokasi hub (TERIMPLEMENTASI)
 
 ### `GET /api/locations`
 
@@ -618,6 +634,31 @@ Respons `200`:
   ]
 }
 ```
+
+### `GET /api/locations/{locationId}/map`
+
+Mengembalikan koordinat pusat kota yang disimpan pada tabel `locations`, URL tile OpenStreetMap, dan tautan OpenStreetMap. Frontend memakai koordinat ini untuk menampilkan Leaflet map.
+
+Contoh: `GET /api/locations/jakarta/map`
+
+Respons `200`:
+
+```json
+{
+  "data": {
+    "location": { "id": "jakarta", "city": "Jakarta" },
+    "map": {
+      "latitude": -6.2088,
+      "longitude": 106.8456,
+      "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      "openStreetMapUrl": "https://www.openstreetmap.org/?mlat=-6.2088&mlon=106.8456#map=13/-6.2088/106.8456",
+      "approximate": true
+    }
+  }
+}
+```
+
+Koordinat ini menunjukkan area umum kota, bukan alamat cabang atau titik serah-terima yang presisi. Kolom `latitude` dan `longitude` di tabel `locations` diisi lewat migrasi koordinat dan `backend/seed/locations.json`. Tidak diperlukan API key untuk peta. Leaflet menampilkan tile OSM dengan atribusi kontributor OpenStreetMap. Tile publik OSM mengikuti [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/); aplikasi tidak boleh melakukan prefetch atau unduhan tile massal.
 
 ## Armada kendaraan (RANCANGAN)
 
@@ -766,6 +807,8 @@ Semua aksi admin harus mencatat actor, waktu, dan perubahan status untuk audit (
 | `GET /` (health check) | Terimplementasi |
 | `POST /api/register` | Terimplementasi |
 | `POST /api/login` | Terimplementasi |
+| `GET /api/me` | Terimplementasi |
+| `POST /api/logout` | Terimplementasi |
 | `POST /api/auth/refresh` | Rancangan |
 | `POST /api/auth/logout` | Rancangan |
 | `POST /api/auth/verify` | Rancangan |
@@ -773,14 +816,19 @@ Semua aksi admin harus mencatat actor, waktu, dan perubahan status untuk audit (
 | `POST /api/auth/password/reset` | Rancangan |
 | `POST /api/auth/password/reset/confirm` | Rancangan |
 | `GET /api/locations` | Terimplementasi |
+| `GET /api/locations/{locationId}/map` | Terimplementasi |
 | `GET /api/vehicles` | Terimplementasi |
 | `GET /api/vehicles/{id}` | Terimplementasi |
 | `GET /api/vehicles/{id}/availability` | Terimplementasi |
 | `POST /api/bookings/quote` | Terimplementasi |
 | `POST /api/bookings` | Terimplementasi |
+| `GET /api/bookings/mine` (role client) | Terimplementasi |
 | `GET /api/bookings/{id}` | Terimplementasi |
 | `POST /api/bookings/{id}/cancel` | Terimplementasi |
-| `/api/admin/*` | Rancangan |
+| `GET /api/admin/dashboard` | Terimplementasi |
+| `GET /api/admin/users` | Terimplementasi |
+| `PATCH /api/admin/users/{id}/role` | Terimplementasi |
+| `GET /api/admin/bookings` | Terimplementasi |
 
 ## Catatan implementasi booking
 
@@ -790,4 +838,6 @@ Semua aksi admin harus mencatat actor, waktu, dan perubahan status untuk audit (
 - Nomor telepon dinormalisasi ke E.164 (`0812...` -> `+62812...`).
 - Ketersediaan: jumlah lock aktif yang tumpang tindih harus < `vehicle_locations.stock`; dicek di dalam transaksi dengan `FOR UPDATE`. Constraint eksklusi GiST tidak dipakai karena bertentangan dengan `stock > 1`.
 - Kode error: `VALIDATION_ERROR` (422), `VEHICLE_NOT_FOUND`/`LOCATION_NOT_FOUND`/`BOOKING_NOT_FOUND` (404), `VEHICLE_UNAVAILABLE`, `BOOKING_NOT_CANCELLABLE`, `CANCELLATION_WINDOW_PASSED`, `IDEMPOTENCY_KEY_REUSED` (409).
-- JWT dan endpoint `/api/admin/*` belum dikerjakan.
+- Autentikasi memakai sesi PostgreSQL dan cookie `HttpOnly`; rancangan JWT di bagian atas belum diterapkan.
+- Seluruh `/api/admin/*` di atas memerlukan role `admin`. Pendaftaran publik selalu membuat role `client`; perubahan role dilakukan melalui endpoint admin.
+- Jalankan migrasi sesi dan role dengan `cd backend` lalu `npm run migrate-up`. File `backend/.env` perlu memiliki `DATABASE_URL` yang valid.

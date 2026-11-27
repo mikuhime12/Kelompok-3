@@ -16,15 +16,18 @@ const client = await pool.connect();
 try {
   await client.query("BEGIN");
 
+  // [TAMBAHAN BELAJAR] Seed mengisi koordinat latitude/longitude dari seed/locations.json.
+  // Data ini dipakai endpoint peta untuk memusatkan Leaflet pada kota yang dipilih.
   for (const l of locations) {
     await client.query(
-      `INSERT INTO locations (id, code, name, status, city, icon, color, sort_order)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      `INSERT INTO locations (id, code, name, status, city, icon, color, sort_order, latitude, longitude)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        ON CONFLICT (id) DO UPDATE SET
          code = EXCLUDED.code, name = EXCLUDED.name, status = EXCLUDED.status,
          city = EXCLUDED.city, icon = EXCLUDED.icon, color = EXCLUDED.color,
-         sort_order = EXCLUDED.sort_order`,
-      [l.id, l.code, l.name, l.status, l.city, l.icon, l.color, l.sort_order]
+         sort_order = EXCLUDED.sort_order, latitude = EXCLUDED.latitude,
+         longitude = EXCLUDED.longitude`,
+      [l.id, l.code, l.name, l.status, l.city, l.icon, l.color, l.sort_order, l.latitude, l.longitude]
     );
   }
 
