@@ -41,6 +41,9 @@ export function locationToApi(row) {
     city: row.city,
     icon: row.icon,
     color: row.color,
+    // [TAMBAHAN BELAJAR] Ubah koordinat Postgres menjadi angka sebelum dikirim sebagai JSON.
+    latitude: row.latitude == null ? null : Number(row.latitude),
+    longitude: row.longitude == null ? null : Number(row.longitude),
   };
 }
 

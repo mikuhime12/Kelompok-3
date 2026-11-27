@@ -1,7 +1,8 @@
 import { Router } from "express";
 import crypto from "node:crypto";
 import pool from "../db.js";
-import { ApiError, notFound, sendData, validationError } from "../lib/http.js";
+import { ApiError, notFound, sendData, sendList, validationError } from "../lib/http.js";
+import { requireRole } from "../middleware/auth.js";
 import { bookingToApi, toWib } from "../lib/mappers.js";
 import {
   CANCEL_FREE_HOURS,
@@ -45,6 +46,15 @@ function tokenMatches(expected, given) {
   const b = Buffer.from(String(given));
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
+
+// GET /api/bookings/mine — histori booking untuk akun client yang sedang login.
+router.get("/mine", ...requireRole("client"), async (req, res) => {
+  const { rows } = await pool.query(
+    `${BOOKING_SELECT} WHERE b.account_id = $1 ORDER BY b.created_at DESC`,
+    [req.user.id]
+  );
+  sendList(res, rows.map((row) => bookingToApi(row)));
+});
 
 const bookingNotFound = () => notFound("BOOKING_NOT_FOUND", "Pemesanan tidak ditemukan.");
 
@@ -178,16 +188,18 @@ router.post("/", async (req, res) => {
     );
 
     const accessToken = crypto.randomBytes(32).toString("hex"); // 64 karakter
+    const accountId = req.session?.userId ?? null;
 
     const inserted = await client.query(
       `INSERT INTO bookings
-         (vehicle_id, location_id, rental_type, pickup_at, return_at, duration_days,
+         (account_id, vehicle_id, location_id, rental_type, pickup_at, return_at, duration_days,
           customer_name, customer_phone,
           vehicle_subtotal, driver_subtotal, discount, total, currency,
           access_token, idempotency_key)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
        RETURNING id`,
       [
+        accountId,
         vehicle.id,
         location.id,
         input.rentalType,
