@@ -5,6 +5,8 @@ export default function Navbar({
   onSelectCategory,
   onLogout,
   onOpenHistory,
+  onOpenAuth,
+  isLoggedIn = false,
   historyCount = 0,
   isDarkMode,
   onToggleDarkMode,
@@ -37,7 +39,7 @@ export default function Navbar({
           </button>
 
           {/* Center Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7">
+          <nav className="hidden lg:flex items-center gap-7">
             <a 
               href="#armada"
               className="text-sm font-semibold text-slate-700 hover:text-purple-700 transition"
@@ -78,19 +80,23 @@ export default function Navbar({
             >
               {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-            <button
+            {isLoggedIn ? <button
               type="button"
               onClick={onOpenHistory}
               className="relative flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-purple-700 transition"
             >
               <History className="w-3.5 h-3.5 text-purple-600" />
-              <span>History</span>
+              <span>Historis</span>
               {historyCount > 0 && (
                 <span className="min-w-4 h-4 px-1 rounded-full bg-purple-600 text-white text-[9px] font-black flex items-center justify-center">
                   {historyCount > 99 ? '99+' : historyCount}
                 </span>
               )}
-            </button>
+            </button> : <>
+              <button type="button" onClick={() => onOpenAuth('login')} className="text-xs font-bold text-slate-700 hover:text-emerald-800 transition px-2 py-1.5">
+                Masuk
+              </button>
+            </>}
             <a 
               href="https://wa.me/6281234567890" 
               target="_blank" 
@@ -101,13 +107,13 @@ export default function Navbar({
               <span>Bantuan</span>
             </a>
 
-            <button type="button" onClick={onLogout} className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-emerald-800 transition px-2 py-1.5">
+            {isLoggedIn && <button type="button" onClick={onLogout} className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-emerald-800 transition px-2 py-1.5">
               <LogOut className="w-3.5 h-3.5" /> Keluar
-            </button>
+            </button>}
           </div>
 
           {/* Mobile Hamburger Button */}
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex lg:hidden items-center gap-2">
             <button
               type="button"
               onClick={onToggleDarkMode}
@@ -130,7 +136,7 @@ export default function Navbar({
 
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-purple-100/80 space-y-3 bg-white/95 backdrop-blur-lg rounded-b-2xl px-4 shadow-xl">
+          <div className="lg:hidden py-4 border-t border-purple-100/80 space-y-3 bg-white/95 backdrop-blur-lg rounded-b-2xl px-4 shadow-xl">
             <a
               href="#armada"
               onClick={() => {
@@ -177,7 +183,7 @@ export default function Navbar({
                   <Headphones className="w-3.5 h-3.5 text-purple-600" />
                   <span>Bantuan</span>
                 </a>
-                <button
+                {isLoggedIn && <button
                   type="button"
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -186,17 +192,19 @@ export default function Navbar({
                   className="relative flex items-center gap-1.5 text-xs font-semibold text-slate-600"
                 >
                   <History className="w-3.5 h-3.5 text-purple-600" />
-                  <span>History</span>
+                  <span>Historis</span>
                   {historyCount > 0 && (
                     <span className="min-w-4 h-4 px-1 rounded-full bg-purple-600 text-white text-[9px] font-black flex items-center justify-center">
                       {historyCount > 99 ? '99+' : historyCount}
                     </span>
                   )}
-                </button>
+                </button>}
               </div>
-              <button type="button" onClick={onLogout} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 px-3 py-1.5 rounded-lg border border-slate-200">
+              {isLoggedIn ? <button type="button" onClick={() => { setMobileMenuOpen(false); onLogout(); }} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 px-3 py-1.5 rounded-lg border border-slate-200">
                 <LogOut className="w-3.5 h-3.5" /> Keluar
-              </button>
+              </button> : <div className="flex items-center gap-2">
+                <button type="button" onClick={() => { setMobileMenuOpen(false); onOpenAuth('login'); }} className="text-xs font-bold text-slate-700 px-2 py-1.5">Masuk</button>
+              </div>}
             </div>
           </div>
         )}
